@@ -1,0 +1,59 @@
+
+
+0 . Attache to container instance (tty)
+
+   sudo docker run -i -t  <image-id>         #  -i for intractive and -t for attache to 'tty' 
+   
+1. Get all running/stop docker instance
+
+      sudo docker -a -q
+      
+2. Stop and rm docker instance
+
+   sudo docker stop/rm <conainer-id>
+   
+3. List all local docker iamges 
+ 
+    sudo docker images 
+   
+4.  Get diff 
+     sudo docker diff  <container-id> 
+     
+5.  commit 
+
+    <<< Commint to existing image >>>>
+    sudo docker commmit fc3dc4d5cd05   
+    
+    <<<< create new image >>>>>>
+   sudo docker commmit fc3dc4d5cd05 [<image_name>:<version>]  
+   
+   Ex. sudo docker commit   d40445501eec  python_wget:1.0
+   
+6. Delete image 
+  
+     sudo docker rmi <image-id>
+     
+ 7.  Listent on port 8080 
+ 
+   sudo docker run -p 8080 -i -t ubuntu /bin/bash
+   
+ 8. Sample  Docker file 
+ 
+#Kamal Kumar Pushpad
+
+FROM ubuntu:14.04
+
+RUN apt-get install wget
+
+#CMD ["/usr/sbin/nginx", "-D", "FOREGROUND"]
+
+
+9. build docker image from docker file
+
+  sudo docker build -f  /home/cisco/containers/docker/Dockerfile .
+  
+  
+
+   
+   
+ 
