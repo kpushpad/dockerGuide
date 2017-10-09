@@ -1,4 +1,7 @@
 
+# Run first docker instance 
+     
+     sudo docker run hello-world
 
 0 . Attache to container instance (tty)
 
