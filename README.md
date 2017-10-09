@@ -6,7 +6,7 @@ Install Docker CE on ubuntu 16.04
 
 2.  	commonDockerCommands
 
-        [a link] https://github.com/docker/labs/blob/master/beginner/readme.md
+        [a link] (https://github.com/docker/labs/blob/master/beginner/readme.md)
 
 3.    DockerCleanupScript
 
