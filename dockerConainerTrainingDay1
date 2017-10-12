@@ -1,0 +1,259 @@
+Get Account on "https://cloud.digitalocean.com/"
+
+# Container can be run on VM , Bare Metal or  inside a container.
+
+# container can be run in many ways. "lxc" , "libvirt" and docker are some ways. Idea here is that you don't need either docker 
+   or libvirt in order to run container. 
+   
+   # In order to run container we only need some way to manupulate "cgroup" & "namespace".
+   # Many people create there own way to handle "cgroup" & "namespace" 
+     so Linux foundation created "OCI" specfication for run time container. "runC" is the one of the implementation of 
+      OCI specification which manupulates "cgroup" and "namespace"
+
+# you can run Windows container on windows and linux , or lxc container on windowns or vice-vircs. This is possible
+now a days using concept callse "uni-kernel" which creats thin linux VM on windowns or mac. 
+   
+# you can run any container based out of  ubuntu, fedora , redhat on any kernel until unless there is "glibc" compatiblity.  
+Becasue "glibc" is one which intercept syscall from container process delegtes them to host kernel. 
+
+#Containers were there before docker.
+  then why "Docker" ???????
+  Docker made the workflow of container ( create/start/stop/delete/ n/w ) very easy that's made container more interesting and popular.  
+
+# "chroot" was one of the primitive way of getting container but it  doesn't give other features like n/w namespace and all.
+
+# /lib/systemd/system/docker.service.  for modiying config for docker systemD. , you can modify any other deamon as well 
+                                       for "/lib/systemd/system/d". 
+   But Better to create your own docker config in /etc/docker/daemon.json (see lab)
+                                       
+  # docker has changed its command so you need to start using new commands.
+     new commands => docker container --help 
+                     docker image --help 
+  
+ # Always get images from docker store intead of docker hub if possible. Bcoz images at docker store are verified. 
+ 
+   https://hub.docker.com/explore/ for all offical repo .
+   https://hub.docker.com/  
+   
+ # Docker image can be identified by three part => Registry + repo + tag 
+     registry => Registry: https://index.docker.io/v1/. every company can have their own registry 
+     repo => nginx:latest 
+  
+ # when you build images from Dockerfile make sure that you specify --nocache otherwise docker remembers instruction in 
+    previous build commands and if new build has same set of instructions then  it will build it from cache.
+    
+      ######when you build image out of docker file make sure you don't have any other file in that directory , bcoz docker client 
+      will tar all files in given diretory and send them to docker server for building . So no more files except dockerfile and only relevant files
+      which needs to be sent. 
+      
+  # Don't put to many 'RUN' statments in docker file bcoz it crearts one layers correspodning to one 'RUN' statment. 
+    try to combine multiple 'RUN' into one 'RUN' statment using '&&' so only one layer is there,  otherwise your image
+    we grow in size. 
+
+
+#########################################Docker Basics#####################
+# Docker is client/server acrictechture and communicate via REST Calls. 
+# Docker has two deamon  "dockerD" , "containerD" . "containerD" deamon uses "runc" to run container. 
+
+ <<<<<<<Install Docker and runC on >>>>>>>>>>>>
+   curl -fsSL https://get.docker.com/ | sh
+    apt-get install runc
+ 
+###############################################Lab assignment###############################################################
+
+1. ##############>> choot lab
+
+<<<< download rootfs and extrace that into some dir >>>>>>
+
+docker export $(sudo docker create busybox) > /tmp/busybox.tar
+mkdir -p ~/myrunccontainer/rootfs
+tar -C ~/myrunccontainer/rootfs -xf /tmp/busybox.tar
+
+<<<<<<<< then run chroot command from that dir. it will new shell with new rootFS  >>>>>>>>>>>>>>>>>>>>>>>>
+
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# chroot  rootfs/ /bin/sh
+/ # 
+/ # 
+/ #ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether 62:60:0c:6f:20:ef brd ff:ff:ff:ff:ff:ff
+    inet 139.59.15.145/20 brd 139.59.15.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet 10.47.0.5/16 brd 10.47.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::6060:cff:fe6f:20ef/64 scope link 
+       valid_lft forever preferred_lft forever
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue 
+    link/ether 02:42:95:9d:ee:78 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+/ # 
+
+
+2. ##############>>> container using  runc 
+
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# ls
+rootfs
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# pwd
+/root/myrunccontainer
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# ls
+rootfs
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# runc spec   <<< first run this command >>>
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# ls
+config.json  rootfs
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# 
+
+   => open config.json for how to run container.
+   
+   create container using "runc" 
+   
+   root@ubuntu-512mb-blr1-01:~/myrunccontainer# runc run myc
+/ # 
+/ #
+
+3. ################>>>> Cgroup concepts
+         
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# cd /sys/fs/cgroup/
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup# ls
+blkio  cpu  cpuacct  cpu,cpuacct  cpuset  devices  freezer  hugetlb  memory  net_cls  net_cls,net_prio  net_prio  perf_event  pids  systemd
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup# 
+
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# ls
+config.json  rootfs
+root@ubuntu-512mb-blr1-01:~/myrunccontainer# cd /sys/fs/cgroup/freezer/
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer# ls
+cgroup.clone_children  cgroup.procs  cgroup.sane_behavior  notify_on_release  release_agent  tasks
+
+  <<<<<<<freeze the process using cgroup>>>>>>>>>
+  
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer# mkdir workshop <<< create new hierarchery workshop>>>>>>>>
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer# ls
+cgroup.clone_children  cgroup.procs  cgroup.sane_behavior  notify_on_release  release_agent  tasks  workshop
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer# cd workshop/
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop# ls
+cgroup.clone_children  cgroup.procs  freezer.parent_freezing  freezer.self_freezing  freezer.state  notify_on_release  tasks
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop#
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop# echo 20764 > tasks.    <<< 20764 is pid of some process running on host>>>>
+
+ root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop# echo "FROZEN" > freezer.state. <<< freeze 20764 process >>>>
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop# 
+root@ubuntu-512mb-blr1-01:/sys/fs/cgroup/freezer/workshop# echo "THAWED" > freezer.state <<< resuming process >>>>
+
+
+4. ###################### Docker Services commamnds 
+
+  systemctl  status docker => it by default listen on unix domain socket spo docker cliean wil be able to connect locally only
+  systemctl  stop docker
+  systemctl  start docker
+  docker info 
+  
+  /usr/bin/dockerd -H 0.0.0.0:2375. =====> start docker to listen on tcp port 2375 
+  
+  then access docker from browser http://139.59.15.145:2375/info
+  
+  <<<<<<<.   overwirte docker config by creating below file and restart docker service >>>>>>>>>>
+  
+root@ubuntu-512mb-blr1-01:~# cat  /etc/docker/daemon.json
+{
+"experimental": true,
+"debug": true,
+"log-level": "info"
+}
+root@ubuntu-512mb-blr1-01:~#
+  
+  
+Restart the service.
+$ systemctl daemon-reload
+$ systemctl restart docker.service
+  
+5.  ##########>>>> Docker container lab 
+     docker container run -i -t alpine sh.  => pull alpine if not locally aviable and run container out of it with "shell" 
+     
+     After "exit' command from running container , will stop the containe. 
+     
+     $docker container run -d nginx   => -d for running container in background 
+     
+     $docker container ls
+     $docker container ls -a     => -a for all foreground & background running container 
+  
+  <<<< docker's root dir is "/var/lib/docker" . Docker deamon keeps all images, container and other info 
+      here >>>>>>>>>
+  
+root@ubuntu-512mb-blr1-01:/var/lib/docker# ls
+builder  containers  image  network  overlay2  plugins  swarm  tmp  trust  volumes
+root@ubuntu-512mb-blr1-01:/var/lib/docker# 
+     
+<<<< see container info >>> 
+     
+ $ docker container inspect <contaier-id> 
+ 
+ $ docker image ls => see all images 
+ 
+ $ docker image pull fedora. => pull latest fedora latest 
+ 
+ $ docker image inspect  => inspect image info 
+ 
+ $ ctl + p + q   => to detttach running container which will still be running 
+ 
+ $ docker container diff myalpine. => get diff of 'myalpine' container against image 
+ 
+ root@ubuntu-512mb-blr1-01:~# docker container commit myalpine alpine:kpushpad   <<<< comint changes from 'myalpine' into 'alpine:kpushpad'
+sha256:f056d7b1dd5c94b5eacfe38afdb79725c3c26bd8f9daadf117049d11997d3b8d
+root@ubuntu-512mb-blr1-01:~# docker image ls 
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+alpine              kpushpad            f056d7b1dd5c        17 seconds ago      3.97MB
+nginx               latest              1e5ab59102ce        2 days ago          108MB
+fedora              latest              b0b140824a48        3 weeks ago         231MB
+alpine              latest              76da55c8019d        4 weeks ago         3.97MB
+busybox             latest              54511612f1c4        4 weeks ago         1.13MB
+root@ubuntu-512mb-blr1-01:~#
+
+
+<<<< export  image in form of tar. you can also push it to local/remot docker registry >>>>>>>>
+  
+ $ docker save alpine:kpushpad > /tmp/myalpine.tar  <<< Save image in .tar file which can shared across and imported 
+                                                        by other users >>>
+ 
+ $ docker container stop <container-id>
+  
+ $ docker container rm <containerp-id>
+ 
+ $  docker image rm alpine:kpushpad
+ 
+ <<<<<<<<< import image >>>>>>>>
+ 
+ $docker image load  -i /tmp/myalpine.tar
+ 
+6. ########## push image to docker registry in your account 
+ 
+   $ docker login   << you need to loging with your user:password before you can push images to docker registry.>>>>>>
+       docker image tage <image_name:tag> kpushpad/image_name:tag
+       
+     $ docker image tag alpine:kpushpad  kpushpad/alpine:kpushpad 
+     $ docker image push kpushpad/alpine:kpushpad
+     
+7.   ############# Building docker image from docker file 
+   
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls
+Dockerfile
+root@ubuntu-512mb-blr1-01:~/kpushpad# cat Dockerfile 
+FROM alpine 
+RUN date > /data 
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker image build -t kpushpad/alpine:dockerFile .
+Sending build context to Docker daemon  2.048kB
+Step 1/2 : FROM alpine
+ ---> 76da55c8019d
+Step 2/2 : RUN date > /data
+ ---> Running in faa5044b3c0e
+ ---> 103e40d9eb38
+Removing intermediate container faa5044b3c0e
+Successfully built 103e40d9eb38
+Successfully tagged kpushpad/alpine:dockerFile
+root@ubuntu-512mb-blr1-01:~/kpushpad#
