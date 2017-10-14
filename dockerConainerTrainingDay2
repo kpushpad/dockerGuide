@@ -1,0 +1,515 @@
+# Usually we only one signle process in container  like one container running nginx or postgres or any other process.
+  And this single process is seen by host OS. 
+
+# if you want multiple process to run on container then one process has to manging other process like 'init' process manages 
+  all other process forked by init. 'init' proc would the master process. 
+  Otherwise only run single service in one container.
+
+# you can you use only one 'CMD' in docker file as it will run only one process. 
+ 
+# Docker File Ref => https://docs.docker.com/engine/reference/builder/#escape
+
+# 'CMD' and 'ENTRYPOINT' are run time instruction , all other are build time. 
+
+# Even though we use 'CMD' to tell which command will run on startup , it possible to override during run time. 
+ 
+  'ENTRYPOINT' used so that nobody can change/override  your command , so whatever we mentioned command in ENTRYPOINT ,
+  it will be  executed always , user can't override his own command during 'docker container run'. 
+   
+    whatever  binary specified in 'ENTRYPOINT' will always run , use can't change it. 
+   'ENTRYPOINT' is default binary to run. But you can use both  'ENTRYPOINT' and 'CMD' together. in that case 
+   we will specify command to run  'ENTRYPOINT' and arugment in 'CMD'. 
+   so later user can pass his own args. [see lab 1 and 2].
+   
+# Both 'COPY' & 'ADD' copies files from local host m/c to docker container but in  'ADD' we can use some http,ftp url. 
+
+# HEALTHCHECK  is used to decide what if process inside container dies.
+
+# Docker daemon creates  'docekr0' softer defined bridge (logical bridge) automatcially and all container will be 
+  tried to that.But you can create your own networek with own ip address space and ask docker to use it. 
+
+   you use 'brctl show' command to check bridge name , and how many containers are attached to it.
+   
+   docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default 
+    link/ether 02:42:95:9d:ee:78 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::42:95ff:fe9d:ee78/64 scope link 
+       valid_lft forever preferred_lft forever
+       
+  root@ubuntu-512mb-blr1-01:~/kpushpad# brctl show 
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.0242959dee78	no		veth84e28f0.     <<<< docker0 is bridge and veth84e28f0 interface connected to it for some 
+                                                         container. >>>
+                                                         
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -d --name web1 nginx:alpine  
+88f72c2f7395829ee8200f4699fa9f868e24dd42662fec5c4ebcd1049828cef7
+
+<<<<<Now  two containers are attached to it >>>>
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# brctl show 
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.0242959dee78	no		veth51fe961
+							                     veth84e28f0
+                                   
+                                   <<<< Show docker netwrok >>>>
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker network ls 
+NETWORK ID          NAME                DRIVER              SCOPE
+af736fca015d        bridge              bridge              local
+de9012e1d66c        host                host                local
+b46aea4f2c00        none                null                local
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+       
+# Readonly OSes are os where you can't install anything on them. Usually they have two boot partion one for booting and other for upgrade. 
+  
+# By default docker container would be in same subnet as other containers which is connected to 'docker0' but it is possible 
+  to use host n/w by --network=host. Using this container will have access to local host stack. 
+  
+# you can bypass docker's networking and use your own n/w plugin , so instead of docker assigning IPs to containers , your plugin 
+  will take care of ip assigment. 
+  
+# you can create  your own bridge using brtcl or other tool  and attache it to docker. see lab "6". 
+
+# when you create own network (using docker or brctl), it automatically creats DNS space for your newly created . 
+  you can ping based on hostname instad of ip.
+  see lab 6.
+  
+# Docker internally uses 'btcrl' to create your our bridge while creating new network. 
+# "macVlan" so your ontainers can get IP From local dhclient. leanr more about "macVlan". 
+
+# Read about CNM (Container Network model) and CNI "Container Network Inteface'
+
+# you can create multiple networks and attach container to them but all network space would be in diffirent subnet. 
+  so cotainer in one network by default won't be able to ping contianer in other network. 
+  
+  If you want communicate b/w them you need to put Router in b/w network. 
+   
+   One way of doing this is put one container in two networks so that it can behave like router b/w containers 
+   in two diffirent networks.
+ 
+ you can put let say two containets in your your own n/w net1 and other two container in net2. both net1 & net2
+  will have their own subnet. if you want to communicate b/w containerts of two diffirent n/w ( net1 & net2 ). 
+  you can create another contianer which belong to both net1 & net2 so that new container will do rotuting b/w 
+  containers of two diffirent n/w space net1 & net2. 
+  
+  means you have put another contianer which will route packates b/w two diffirent n/w.
+
+# MultiStage building from file. It is used when we pull source code and compile it and use only binary. 
+   so in one stage we only compile and build required binaries  and in next stage you only use those bins from previous 
+   build stage. it will reduce your image size as extra stuff generated during previous stages can selectivly picked up.
+   
+   Main objective is not put source code other unnecesarry stuff into container specially if you are pulling and compile 
+   in docker file itself.
+   
+   so you can have many such stage using multiple 'FROM' in dockefile. see lab 7. 
+   
+# By default docker deamin would be using UDS so docker client can only connect to same m/c. But 
+   you can chang this in config  file "/lib/systemd/system/docker.service" to use TCP so remot docker client can 
+   connect to your docker daemon.
+        ExecStart=/usr/bin/dockerd -H 0.0.0.0:<port>
+       
+############################## Volume #####################################
+
+Volume => As we know that when put some data in docker container , it would be discarded when we remove that instance.
+          so what if we want to persist our data in cotainer after that instanace is removed ??
+          use volume. 
+          Volume is usefull when we want to persist our data . bcoz when container stops or removed we will
+         loose our data.  use " -v"  option to create. so any data 
+         
+         "docker volume prune" to remove unwanted volume. see lab '9'
+         
+         # It is possible to attach multiple volumes to same container and same volume to diffirent container in R , R+W , W 
+           mode. 
+         # you can also attach other well known storage if you right pulgin with you.
+           
+           like 'hpe' for HP storage.  
+          
+  ########################### docker compose ########################
+  # https://docs.docker.com/compose/install/
+  
+  # In order to run container we use 'docker container run ..' command . What if you want to run many containes 
+    for diffirent services at same time for your product.  One way is to run each and every container one by one using 
+    CLI. Antoher way is to use docker compose. 
+    
+ # For docker componse to use , you need to write docker-compose .yaml file. This file contains info about all the 
+    services and their config (like port , env ) in .yaml file. 
+ # you put this .yaml file in some dir , dir name is important because docker would create new network and volume 
+   space with dir name. 
+  
+ # Run the docker-compose command from the dir you just create above. 
+  
+ #it doesn't come with docker package. we need to install it seperatly.  see lab 10
+ 
+ # see for more info and lab https://docs.docker.com/compose/wordpress/
+  
+
+############# Docker machine ################
+
+#https://docs.docker.com/machine/install-machine/
+# it is used when we run docker client on our own host and want it connect to docker deamon running remotly & securly. 
+  it enables TSL and other SSL certs to communicate with remote deamon. 
+  
+  it will also install docker daemon on remote m/c.
+
+$ docker-machine ls 
+$ docker-machine create 
+$ 
+
+
+################## image signing ####################
+
+$ export DOCKER_CONTENT_TRUST=1
+   After setting  above content, you can't download any untrusted image and when you push it will be signed when 
+    push to docker. 
+####################################################
+# Linux capability is used for root use in contianer which doesn't allow root use in container to lot of things. 
+ 
+ docker container run -it --network=host --privileged alpine sh <<<  --privileged to get more power >>>>>
+ 
+##################################################### Lab #################################################
+
+1. entrypoint 
+root@ubuntu-512mb-blr1-01:~/kpushpad# cat Dockerfile 
+FROM alpine 
+RUN date > /datCMD ["/bin"]
+ENTRYPOINT ["/bin/ls", "/"]
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+2. entrypoint with cmd 
+root@ubuntu-512mb-blr1-01:~/kpushpad# cat Dockerfile 
+FROM alpine 
+RUN date > /datCMD ["/bin"]
+CMD ["/bin"]
+ENTRYPOINT ["/bin/ls"]
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+3. copy some file into "/src" dir 
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls
+Dockerfile  src
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls src/
+f1  f2
+root@ubuntu-512mb-blr1-01:~/kpushpad# cat Dockerfile 
+FROM alpine 
+RUN date > /data 
+COPY src /src
+CMD ["/bin"]
+ENTRYPOINT ["/bin/ls"]
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+
+
+4. 
+
+<<<<<<< Attache contaner to host networking means cotnaier will be using host ip and eth's. It menas host interfaces in container.
+         very usefull for Readonly OSes when you can't install anything on OS. >>>>>
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -it --network=host alpine sh
+/ # ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 62:60:0c:6f:20:ef brd ff:ff:ff:ff:ff:ff
+    inet 139.59.15.145/20 brd 139.59.15.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet 10.47.0.5/16 brd 10.47.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::6060:cff:fe6f:20ef/64 scope link 
+       valid_lft forever preferred_lft forever
+3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP 
+    link/ether 02:42:95:9d:ee:78 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::42:95ff:fe9d:ee78/64 scope link 
+       valid_lft forever preferred_lft forever
+45: veth84e28f0@if44: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue master docker0 state UP 
+    link/ether 56:00:5f:48:ee:22 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::5400:5fff:fe48:ee22/64 scope link 
+       valid_lft forever preferred_lft forever
+47: veth51fe961@if46: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue master docker0 state UP 
+    link/ether be:18:5d:d0:fa:79 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::bc18:5dff:fed0:fa79/64 scope link 
+       valid_lft forever preferred_lft forever
+/ #
+
+
+5. 
+
+<<<<<<<< use none option >>>>>>
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -it --network=none alpine sh
+/ # ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+/ #
+
+
+
+6. 
+
+docker network create  --help
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker network create  mynet 
+8823c7fa6861fcde90f7112047b7acacd26b7075593f738b02103f70ead73706
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+af736fca015d        bridge              bridge              local
+de9012e1d66c        host                host                local
+*****8823c7fa6861        mynet               bridge              local*****
+b46aea4f2c00        none                null                local
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+
+<<<< create two container fronend and backend and attache them to our netwok. 
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -d --name frontend --network=mynet  nginx:alpine  
+3b99b4542eb4a7f680feaed67be6a7b878e1f757eef24538e07257f91d253349
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -d --name backend --network=mynet  nginx:alpine  
+b4414565195ce4086c2939a4f60bec85b0d90a93cc325e45a6a0b7bc50826c1c
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+
+<<<< you canautomatically ping because docker given you DNS like funtionality.  >>>
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container exec -it frondend sh 
+Error: No such container: frondend
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container exec -it frontend sh 
+/ # ping backend
+PING backend (172.18.0.3): 56 data bytes
+64 bytes from 172.18.0.3: seq=0 ttl=64 time=0.300 ms
+64 bytes from 172.18.0.3: seq=1 ttl=64 time=0.121 ms
+64 bytes from 172.18.0.3: seq=2 ttl=64 time=0.107 ms
+
+7. 
+
+
+<<< map port 80 on containerts to 8080 on host>>>>>>
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -d --name web4 -p 8080:80 nginx:alpine 
+bf3cd38371f55dae13eaa515d90114947ca75d8da7d12eaf7fda0357e47b24bc
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+
+ you can access now using "http://139.59.15.145:8080/" any where in world. 
+
+8. multi stage dockerfile.
+
+
+FROM bitnami/minideb-extras:jessie-r14-buildpack
+
+RUN bitnami-pkg install go-1.8.3-0 --checksum 557d43c4099bd852c702094b6789293aed678b253b80c34c764010a9449ff136
+
+ENV GOPATH=/gopath
+ENV PATH=$GOPATH/bin:/opt/bitnami/go/bin:$PATH
+
+RUN go get github.com/urfave/negroni
+
+COPY server.go /
+RUN go build /server.go
+
+FROM bitnami/minideb:latest
+
+COPY --from=0 /server /
+
+COPY page.html /
+
+ENV PORT=80
+
+CMD /server
+
+9. 
+
+<<<<< create /data dir in container >>>>
+ so when we put any data in "/data" it will copied to our volume dir even when cotnaienr is not running or removed. 
+ 
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -it -v /data alpine sh
+/ # ls /data
+/ # pwd
+/
+/ # cd /data
+/data # pwd
+/data
+/data #
+
+=>> docker inspect output. see source and destination. 
+
+"Mounts": [
+            {
+                "Type": "volume",
+                "Name": "ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8",
+                "Source": "/var/lib/docker/volumes/ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8/_data",
+                "Destination": "/data",
+                "Driver": "local",
+                "Mode": "",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        
+      
+      <<<<< create some file in container in /data dir and stop/remove container. >>>>>>>>
+      root@ubuntu-512mb-blr1-01:~/kpushpad# docker container attach  30b9eba357a9
+/data # 
+/data # 
+/data # ls
+/data # touch f1 
+/data # touch f2
+/data # touch f1 
+/data # read escape sequence
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls /var/lib/docker/volumes/ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8/_data"
+> ^C
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls /var/lib/docker/volumes/ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8/_data
+f1  f2
+ 
+ <<<< see all docker volume >>>>> 
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker volume ls 
+DRIVER              VOLUME NAME
+local               ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container ls -a -q | xargs docker container rm -f 
+30b9eba357a9
+1d6eefd6c3cb
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker volume prune 
+WARNING! This will remove all volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Deleted Volumes:
+ae59d7dbb9f3e5f4ad77c79e2939386ef6a4ec13f3a2a196d7f7e9bdb968dba8
+
+Total reclaimed space: 0B
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+<<<< create your own volume >>>>>>>
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker volume create myvol 
+myvol
+root@ubuntu-512mb-blr1-01:~/kpushpad# ls /var/lib/docker/volumes/myvol/_data/. <<<< local location >>>>>
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+<<<<<< mounting newly created volume to your container>>>>>>>>>>
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -it -v myvol:/data1 alpine sh 
+/ # ls /data1/
+/ # 
+
+
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container run -it -v myvol:/data1 alpine sh 
+/ # ls /data1/
+/ # exit
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+root@ubuntu-512mb-blr1-01:~/kpushpad# 
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker volume rm myvol
+Error response from daemon: unable to remove volume: remove myvol: volume is in use - [09cf575d98e1eb54729dce3d94d4d289b057a034a47387900316f1f1ef9a307a]
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker container ls -a -q | xargs docker container rm -f 
+09cf575d98e1
+root@ubuntu-512mb-blr1-01:~/kpushpad# docker volume rm myvol
+myvol
+root@ubuntu-512mb-blr1-01:~/kpushpad#
+
+
+###### sharing host folder to containers
+
+ root@ubuntu-512mb-blr1-01:~# ls
+kpushpad  myrunccontainer
+root@ubuntu-512mb-blr1-01:~# mkdir /mnt/shared 
+root@ubuntu-512mb-blr1-01:~# 
+
+root@ubuntu-512mb-blr1-01:~# cd /mnt/shared/
+root@ubuntu-512mb-blr1-01:/mnt/shared# touch f1
+root@ubuntu-512mb-blr1-01:/mnt/shared# touch f2
+root@ubuntu-512mb-blr1-01:/mnt/shared# 
+
+
+root@ubuntu-512mb-blr1-01:/mnt/shared# docker container run -it -v /mnt/shared/:/data1 alpine sh 
+/ # ls /data1/
+f1  f2
+/ # 
+
+
+10. 
+
+<<<< install docker compose >>>>>
+
+sudo curl -L https://github.com/docker/compose/releases/download/1.16.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+root@ubuntu-512mb-blr1-01:~# sudo chmod +x /usr/local/bin/docker-compose 
+root@ubuntu-512mb-blr1-01:~# docker-compose version 
+docker-compose version 1.16.1, build 6d1ac21
+docker-py version: 2.5.1
+CPython version: 2.7.13
+OpenSSL version: OpenSSL 1.0.1t  3 May 2016
+root@ubuntu-512mb-blr1-01:~# 
+
+root@ubuntu-512mb-blr1-01:~/ mkdir blog
+root@ubuntu-512mb-blr1-01:~/blog# ls
+docker-compose.yaml
+root@ubuntu-512mb-blr1-01:~/blog# cat docker-compose.yaml 
+
+
+<<<<< it create new n/w same blog and volume >>>>
+
+
+root@ubuntu-512mb-blr1-01:~/blog# docker-compose up
+Creating network "blog_default" with the default driver
+Creating volume "blog_db_data" with default driver
+Pulling db (mysql:5.7)...
+5.7: Pulling from library/mysql
+
+......
+.......
+.......
+ configured -- resuming normal operations
+wordpress_1  | [Fri Oct 13 08:33:45.176716 2017] [core:notice] [pid 1] AH00094: Command line: 'apache2 -D FOREGROUND'
+
+=> After that you can access it from below url. 
+http://139.59.15.145:8000/
+
+=> but always run in background 
+
+"root@ubuntu-512mb-blr1-01:~/blog# docker-compose ps 
+      Name                    Command               State          Ports        
+--------------------------------------------------------------------------------
+blog_db_1          docker-entrypoint.sh mysqld      Up      3306/tcp            
+blog_wordpress_1   docker-entrypoint.sh apach ...   Up      0.0.0.0:8000->80/tcp
+root@ubuntu-512mb-blr1-01:~/blog# 
+
+
+
+root@ubuntu-512mb-blr1-01:~/blog# docker-compose down 
+Stopping blog_wordpress_1 ... done
+Stopping blog_db_1        ... done
+Removing blog_wordpress_1 ... done
+Removing blog_db_1        ... done
+Removing network blog_default
+root@ubuntu-512mb-blr1-01:~/blog# 
+
+All the commands =>  all command has to be run from dir where .yaml file is there.
+
+   docker-compose up -d. => run in background 
+    
+   docker-compose ps => see all running 
+  
+   docker-compose down => bring down but dosen't loose volume 
+  
+  docker-compose up -d => bring up again 
+  
+  docker-compose down -v. => delete along with volume 
+  
+  
+11.  Access docker using API 
+
+   root@ubuntu-512mb-blr1-01:~/kcompose# curl --unix-socket /var/run/docker.sock http:/info | jq
+   
+12. docker machine 
+
+   curl -L https://github.com/docker/machine/releases/download/v0.12.2/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
+chmod +x /tmp/docker-machine &&
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+
+
+13. 
+  export DO_TOKEN <token_genrated_from_digital_ocean>
+  docker create --drive digitalocean --digitalocean-token-access $DO_TOKEN
+  
