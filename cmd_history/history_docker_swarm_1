@@ -1,0 +1,46 @@
+    4  service docker start
+    5  curl -fsSL https://get.docker.com/ | sh
+   10  docker swarm init 
+   11  docker swarm init --advertise-addr 139.59.32.121
+   12  docker info
+   13  docker swarm info
+   16  docker node ls 
+   17  docker swarm join-token manger 
+   18  docker swarm join-token manger
+   32  docker node promote cu2j7m3brfhlxmkl63rw3kc51 --help
+   33  docker node promote cu2j7m3brfhlxmkl63rw3kc51 
+   34  docker node demote cu2j7m3brfhlxmkl63rw3kc51
+   35  docker node ls 
+   37  pwd
+   38  docker service create alpine ping 8.8.8.8
+   39  docker service ls 
+   40  docker service ps z2gnjzstwmuv
+   41  docker container ls 
+   48  docker node ls 
+   49  docker container ls 
+   50  docker service scale 23b8b81ecc1e=4
+   51  docker service ls
+   52  docker service scale z2gnjzstwmuv=4
+   53  docker service ls 
+   54  docker service ps z2gnjzstwmuv
+   67  docker node ls 
+   68  docker service ls 
+   69  docker service rm z2gnjzstwmuv
+   70  docker service ls
+   71  docker node ls 
+   77  docker node ls 
+   78  cat /etc/hostname 
+   79  docker service create --name web nginx:alpine 
+   80  docker service scale web=3
+   81  docker service ps web
+   82  docker container ls 
+   83  docker container rm -f 65847a7df38f
+   84  docker container ls 
+   85  docker service ps web
+   91  pwd
+   92  docker node ls 
+   93  docker service ls 
+   94  docker service ps web
+   95  docker container ls 
+   96  history 
+   97  history  > /root/history_10:41_am

@@ -1,0 +1,64 @@
+   98  docker service ls
+   99  docker service inspect 
+  100  docker service inspect  web
+  101  docker service rm -f web
+  102  clear
+  103  docker service ls 
+  104  docker service rm web
+  105  docker service create --name web --publish 80:80 nginx:alpine 
+  106  docker node ls 
+  107  docker service ls 
+  108  docker service rm web 
+  109  clear
+  110  pwd
+  111  docker network create -d overlay rsvpnet 
+  112  docker service create --name mongodb  --network=rsvpnet mongo:3.3
+  113  docker service ls 
+  114  docker service ps 
+  115  docker service ps mongodb
+  116  docker service create --name web -e MONGODB_HOST=mongodb --publish 5000 --network=rsvpnet teamcloudyuga/rsvpapp
+  117  docker service ls 
+  118  docker container ls 
+  119  docker service ls
+  120  docker node ls 
+  121  docker container ls 
+  122  docker service scale web=3
+  123  clear
+  124  docker service ls web
+  125  docker service ls 
+  126  docker service update --image nkhare/rsvpapp:nooc --update-delay 30s web 
+  127  docker service update --image nkhare/rsvpapp:mooc --update-delay 30s web 
+  128  docker service ls 
+  129  clear
+  130  docker service update --image nkhare/rsvpapp:mooc --update-delay 30s web 
+  131  docker service ls 
+  132  docker service rm web
+  133  docker service rm mongodb
+  144  mkdir stack
+  145  cd stack/
+  146  ls
+  147  vi docker-compose.yaml
+  153  ls
+  154  docker stack deploy -c docker-compose.yaml  rsvp 
+  155  docker stack ps rsvp 
+  156  docker service ls 
+  157  docker service ps mongodb
+  158  docker service ps rsvp_mongodb
+  159  docker stack rm rsvp 
+  160  docker stack ps
+  161  docker stack ls
+  162  clear
+  163  ls
+  164  vi docker-compose.yaml 
+  165  docker stack deploy -c docker-compose.yaml  rsvp 
+  166  vi docker-compose.yaml 
+  167  docker stack deploy -c docker-compose.yaml  rsvp 
+  168  vi docker-compose.yaml 
+  169  clear
+  170  ls
+  171  cat docker-compose.yaml 
+  172  clear
+  173  pwd
+  174  ls
+  175  cd ..
+  176  ls
