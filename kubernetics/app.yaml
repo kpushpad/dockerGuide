@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rsvp 
+spec:
+  replicas: 2 
+  template:
+    metadata:
+      labels:
+        app: rsvp 
+    spec:
+      containers:
+      - name: rsvp-app 
+        image: teamcloudyuga/rsvpapp:mooc 
+        ports:
+        - containerPort: 5000
+          name: web-port
+       env:
+       -name: MONGODB_HOST
+       value: mongodb 

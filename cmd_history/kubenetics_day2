@@ -1,0 +1,182 @@
+    1  clear
+    2  pwd
+    3  clear
+    4  pwd
+    5  curl -fsSL get.docker.com -o get-docker.sh
+    6  sh get-docker.sh
+    7  clear
+    8  pwd
+    9  apt-get update && apt-get install -y apt-transport-https
+   10  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+   11  clear
+   12  pwd
+   13  vi /etc/apt/sources.list.d/kubernetes.list
+   14  apt-get update
+   15  apt-get install -y kubelet kubeadm
+   16  clear
+   17  docker image ls 
+   18  kubeadm init --pod-network-cidr=192.168.0.0/16
+   19  mkdir -p $HOME/.kube
+   20  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   21  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   22  kubectl apply -f http://docs.projectcalico.org/v2.4/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+   23  kubectl get nodes 
+   24  cat ~/.kube/config 
+   25  pwd
+   26  scp  ~/.kube/config  kpushpad@10.232.12.65:/Users/kpushpad/.kube/
+   27  clear
+   28  pwd
+   29  git clone https://github.com/kpushpad/dockerGuide.git
+   30  cd dockerGuide/
+   31  ls
+   32  cp ~/.kube/config  .
+   33  ls
+   34  git status 
+   35  git add -- .
+   36  git commit -m ".kube file"
+   37  git config --global user.email  pkamal.work@gmail.com
+   38  git config --global user.name kpushpad
+   39  git push
+   40  pwd
+   41  ls
+   42  git status 
+   43  git commit -m ".kube config "
+   44  git push
+   45  clear
+   46  pwd
+   47  kubectl get nodes 
+   48  history 
+   49  clear
+   50  pwd
+   51  ls
+   52  cd cmd_history/
+   53  ls
+   54  history > install_kubernetics_1
+   55  vi install_kubernetics_1 
+   56  git status 
+   57  vi install_kubernetics_1 
+   58  clear
+   59  pwd
+   60  clear
+   61  pwd
+   62  docker container ls 
+   63* docker container ls  | grep 
+   64  clear
+   65  pwd
+   66  ls
+   67  pwd
+   68  ls 
+   69  cat get-docker.sh 
+   70  clear
+   71  ls
+   72  cd dockerGuide/
+   73  ls
+   74  mkdir docker-file
+   75  cd docker-
+   76  cd docker-file/
+   77  pwd
+   78  vi pod.yaml
+   79  kubectl apply -f pod.yaml 
+   80  vi pod.yaml
+   81  kubectl apply -f pod.yaml 
+   82  vi pod.yaml
+   83  kubectl apply -f pod.yaml 
+   84  pwd
+   85  kubectl get pods -l class=cisco
+   86  kubectl get pods -l run=mynginx 
+   87  cear
+   88  pclear
+   89  clear
+   90  pwd
+   91  ls
+   92  clear
+   93  pwd
+   94  ls
+   95  cp pod.yaml pod_namepsace.yaml 
+   96  vi pod_namepsace.yaml 
+   97  kubectl apply -f pod_namepsace.yaml 
+   98  kubectl get pods -n kpushpad 
+   99  pwd
+  100  cd 
+  101  pwd
+  102  mkdir -p ~/rbac
+  103  cd ~/rbac
+  104  pwd
+  105  ls
+  106  kubectl create namespace kpushpad
+  107  openssl genrsa -out nkhare.key 2048
+  108  pwd
+  109  ls
+  110  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=cloudyuga"
+  111  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=kpushpad"
+  112  openssl x509 -req -in nkhare.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out nkhare.crt -days 500
+  113  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=kpushpad
+  114  ls
+  115  ls ~/.kube/
+  116  kubectl --context=kpushpad-context get pods 
+  117  kubectl get pods 
+  118  clear
+  119  pwd
+  120  ls
+  121  vi role.yaml
+  122  cat  role.yaml
+  123  kubectl create -f role.yaml 
+  124  vi role-binding.yaml 
+  125  cat role-binding.yaml 
+  126  kubectl --context=kpushpad-context get pods 
+  127  vi role-binding.yaml 
+  128  clear
+  129  cat role-binding.yaml 
+  130  kubectl --context=kpushpad-context get pods 
+  131  vi role-binding.yaml 
+  132  kubectl --context=kpushpad-context get pods 
+  133  ls
+  134  vi role.yaml 
+  135  kubectl --context=kpushpad-context get pods 
+  136  history
+  137  kubectl --context=kpushpad-context get pods 
+  138  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=kpushpad
+  139  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=nkhare
+  140  vi role.yaml 
+  141  vi role-binding.yaml 
+  142  kubectl --context=kpushpad-context get pods 
+  143  clear
+  144  pwd
+  145  clear
+  146  pwd
+  147  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=cloudyuga"
+  148  openssl x509 -req -in nkhare.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out nkhare.crt -days 500
+  149  kubectl config set-credentials nkhare --client-certificate=/root/rbac/nkhare.crt --client-key=/root/rbac/nkhare.key
+  150  kubectl config set-context nkhare-context --cluster=kubernetes --namespace=cloudyuga --user=nkhare
+  151  kubectl --context=nkhare-context get pods
+  152  vi role.yaml 
+  153  car role.yaml 
+  154  cat role.yaml 
+  155  kubectl create -f role.yaml
+  156  ubectl create namespace cloudyuga
+  157  kubectl create namespace cloudyuga
+  158  kubectl create -f role.yaml
+  159  clear
+  160  vi role-binding.yaml 
+  161  clear
+  162  cat role-binding.yaml 
+  163  kubectl create -f rolebinding.yaml 
+  164  kubectl create -f role-binding.yaml 
+  165  kubectl --context=nkhare-context get pods
+  166  kubectl  get pods
+  167  clear
+  168  kubectl delete deployments -all
+  169  clear
+  170  kubectl delete deployments --all
+  171  kubectl delete svc mynginx 
+  172  kubectl delete pods --all 
+  173  kubrctl get svc 
+  174  kubectl get svc 
+  175  kubectl delete svc mynginxuma 
+  176  pwd
+  177  clear
+  178  cd /root/dockerGuide/
+  179  ls
+  180  cd cmd_history/
+  181  ls
+  182  history > kubenetics_day2

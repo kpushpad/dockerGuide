@@ -1,0 +1,394 @@
+    1  clear
+    2  pwd
+    3  clear
+    4  pwd
+    5  curl -fsSL get.docker.com -o get-docker.sh
+    6  sh get-docker.sh
+    7  clear
+    8  pwd
+    9  apt-get update && apt-get install -y apt-transport-https
+   10  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+   11  clear
+   12  pwd
+   13  vi /etc/apt/sources.list.d/kubernetes.list
+   14  apt-get update
+   15  apt-get install -y kubelet kubeadm
+   16  clear
+   17  docker image ls 
+   18  kubeadm init --pod-network-cidr=192.168.0.0/16
+   19  mkdir -p $HOME/.kube
+   20  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   21  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   22  kubectl apply -f http://docs.projectcalico.org/v2.4/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+   23  kubectl get nodes 
+   24  cat ~/.kube/config 
+   25  pwd
+   26  scp  ~/.kube/config  kpushpad@10.232.12.65:/Users/kpushpad/.kube/
+   27  clear
+   28  pwd
+   29  git clone https://github.com/kpushpad/dockerGuide.git
+   30  cd dockerGuide/
+   31  ls
+   32  cp ~/.kube/config  .
+   33  ls
+   34  git status 
+   35  git add -- .
+   36  git commit -m ".kube file"
+   37  git config --global user.email  pkamal.work@gmail.com
+   38  git config --global user.name kpushpad
+   39  git push
+   40  pwd
+   41  ls
+   42  git status 
+   43  git commit -m ".kube config "
+   44  git push
+   45  clear
+   46  pwd
+   47  kubectl get nodes 
+   48  history 
+   49  clear
+   50  pwd
+   51  ls
+   52  cd cmd_history/
+   53  ls
+   54  history > install_kubernetics_1
+   55  vi install_kubernetics_1 
+   56  git status 
+   57  vi install_kubernetics_1 
+   58  clear
+   59  pwd
+   60  clear
+   61  pwd
+   62  docker container ls 
+   63* docker container ls  | grep 
+   64  clear
+   65  pwd
+   66  ls
+   67  pwd
+   68  ls 
+   69  cat get-docker.sh 
+   70  clear
+   71  ls
+   72  cd dockerGuide/
+   73  ls
+   74  mkdir docker-file
+   75  cd docker-
+   76  cd docker-file/
+   77  pwd
+   78  vi pod.yaml
+   79  kubectl apply -f pod.yaml 
+   80  vi pod.yaml
+   81  kubectl apply -f pod.yaml 
+   82  vi pod.yaml
+   83  kubectl apply -f pod.yaml 
+   84  pwd
+   85  kubectl get pods -l class=cisco
+   86  kubectl get pods -l run=mynginx 
+   87  cear
+   88  pclear
+   89  clear
+   90  pwd
+   91  ls
+   92  clear
+   93  pwd
+   94  ls
+   95  cp pod.yaml pod_namepsace.yaml 
+   96  vi pod_namepsace.yaml 
+   97  kubectl apply -f pod_namepsace.yaml 
+   98  kubectl get pods -n kpushpad 
+   99  pwd
+  100  cd 
+  101  pwd
+  102  mkdir -p ~/rbac
+  103  cd ~/rbac
+  104  pwd
+  105  ls
+  106  kubectl create namespace kpushpad
+  107  openssl genrsa -out nkhare.key 2048
+  108  pwd
+  109  ls
+  110  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=cloudyuga"
+  111  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=kpushpad"
+  112  openssl x509 -req -in nkhare.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out nkhare.crt -days 500
+  113  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=kpushpad
+  114  ls
+  115  ls ~/.kube/
+  116  kubectl --context=kpushpad-context get pods 
+  117  kubectl get pods 
+  118  clear
+  119  pwd
+  120  ls
+  121  vi role.yaml
+  122  cat  role.yaml
+  123  kubectl create -f role.yaml 
+  124  vi role-binding.yaml 
+  125  cat role-binding.yaml 
+  126  kubectl --context=kpushpad-context get pods 
+  127  vi role-binding.yaml 
+  128  clear
+  129  cat role-binding.yaml 
+  130  kubectl --context=kpushpad-context get pods 
+  131  vi role-binding.yaml 
+  132  kubectl --context=kpushpad-context get pods 
+  133  ls
+  134  vi role.yaml 
+  135  kubectl --context=kpushpad-context get pods 
+  136  history
+  137  kubectl --context=kpushpad-context get pods 
+  138  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=kpushpad
+  139  kubectl config set-context kpushpad-context --cluster=kubernetes --namespace=kpushpad --user=nkhare
+  140  vi role.yaml 
+  141  vi role-binding.yaml 
+  142  kubectl --context=kpushpad-context get pods 
+  143  clear
+  144  pwd
+  145  clear
+  146  pwd
+  147  openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=cloudyuga"
+  148  openssl x509 -req -in nkhare.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out nkhare.crt -days 500
+  149  kubectl config set-credentials nkhare --client-certificate=/root/rbac/nkhare.crt --client-key=/root/rbac/nkhare.key
+  150  kubectl config set-context nkhare-context --cluster=kubernetes --namespace=cloudyuga --user=nkhare
+  151  kubectl --context=nkhare-context get pods
+  152  vi role.yaml 
+  153  car role.yaml 
+  154  cat role.yaml 
+  155  kubectl create -f role.yaml
+  156  ubectl create namespace cloudyuga
+  157  kubectl create namespace cloudyuga
+  158  kubectl create -f role.yaml
+  159  clear
+  160  vi role-binding.yaml 
+  161  clear
+  162  cat role-binding.yaml 
+  163  kubectl create -f rolebinding.yaml 
+  164  kubectl create -f role-binding.yaml 
+  165  kubectl --context=nkhare-context get pods
+  166  kubectl  get pods
+  167  clear
+  168  kubectl delete deployments -all
+  169  clear
+  170  kubectl delete deployments --all
+  171  kubectl delete svc mynginx 
+  172  kubectl delete pods --all 
+  173  kubrctl get svc 
+  174  kubectl get svc 
+  175  kubectl delete svc mynginxuma 
+  176  pwd
+  177  clear
+  178  cd /root/dockerGuide/
+  179  ls
+  180  cd cmd_history/
+  181  ls
+  182  history > kubenetics_day2
+  183  vi kubenetics_day2 
+  184  clear
+  185  pwd
+  186  cd ..
+  187  pwd
+  188  cd 
+  189  ls
+  190  cd dockerGuide/
+  191  ls
+  192  mkdir kubernetics
+  193  cd kubernetics/
+  194  ls
+  195  vi webserver.yaml
+  196  kubectl apply -f webserver.yaml 
+  197  kubectl get svc 
+  198  kubectl get svc all
+  199  kubectl get svc --all
+  200  clear
+  201  ls
+  202  kubectl get nodes 
+  203  kubectl get replicasets
+  204  kubectl get pods
+  205  vi webserver-svc.yaml
+  206  kubectl create -f webserver-svc.yaml
+  207  kubectl get service
+  208  kubectl describe svc web-service
+  209  clear
+  210  ls
+  211  clear
+  212  ls
+  213  cp webserver.yaml mongo.yaml
+  214  vi mongo.yaml 
+  215  ls
+  216  cp webserver-svc.yaml mongo-svc.yaml 
+  217  vi mongo-svc.yaml 
+  218  clear
+  219  pwd
+  220  ls
+  221  history 
+  222  ls
+  223  cat mongo.yaml 
+  224  cat mongo-svc.yaml 
+  225  kubectl create -f mongo-svc.yaml 
+  226  clear
+  227  ls
+  228  cat mongo.yaml 
+  229  cat mongo-svc.yaml 
+  230  clear
+  231  ls
+  232  cp mongo.yaml app.yaml 
+  233  vi app.yaml 
+  234  cat mongo-svc.yaml 
+  235  vi app.yaml 
+  236  cat mongo.yaml 
+  237  vi mongo.yaml 
+  238  clear
+  239  vi mongo.yaml 
+  240  vi app.yaml 
+  241  vi mongo.yaml 
+  242  vi app.yaml 
+  243  vi mongo-svc.yaml 
+  244  vi app.yaml 
+  245  clear
+  246  ls
+  247  cp mongo-svc.yaml  app-svc.yaml 
+  248  vi app-svc.yaml 
+  249  clear
+  250  ls
+  251  vi mongo.yaml 
+  252  vi mongo-svc.yaml 
+  253  ls
+  254  vi app.yaml 
+  255  clear
+  256  kubectl get svc
+  257  kubectl delete svc mongo-service 
+  258  kubectl get svc
+  259  ls
+  260  kubectl create -f mongo-svc.yaml 
+  261  kubectl create -f app-svc.yaml 
+  262  kubectl get svc
+  263  kubectl get svc -o wide 
+  264  kubectl describe svc 
+  265  kubectl get svc -o wide 
+  266  kubectl describe svc mongo-service
+  267  clear
+  268  pwd
+  269  ls
+  270  pwd
+  271  clear
+  272  ls
+  273* 
+  274  kubectl get svc -o wide 
+  275  pwd
+  276  ls
+  277  vi mongo.yaml 
+  278  vi mongo-svc.yaml 
+  279  kubectl get svc -o wide 
+  280  ls
+  281  vi app-svc.yaml 
+  282  vi app.yaml 
+  283  clear
+  284  ls
+  285  vi app-svc.yaml 
+  286  kubectl get svc -o wide 
+  287  pwd
+  288  ls
+  289  kubectl create -f mongo-svc.yaml 
+  290  kubectl delete svc mongo-service-usriniva
+  291  kubectl get svc
+  292  kubectl create -f mongo-svc.yaml 
+  293  kubectl get svc
+  294  clear
+  295  ls
+  296  kubectl get svc
+  297  ls
+  298  vi app-svc.yaml 
+  299  kubectl get svc
+  300  vi mongo-svc.yaml 
+  301  kubectl get svc
+  302  kubectl delete mongo-service 
+  303  kubectl delete svc mongo-service 
+  304  kubectl get svc
+  305  clear
+  306  ls
+  307  vi mongo.yaml 
+  308  ls
+  309  vi mongo-svc.yaml 
+  310  vi mongo.yaml 
+  311  vi mongo-svc.yaml 
+  312  clear
+  313  ls
+  314  vi app-svc.yaml 
+  315  vi app.yaml 
+  316  vi app-svc.yaml 
+  317  kubectl get svc
+  318  vi mongo-svc.yaml 
+  319  clear
+  320  ls
+  321  vi app.yaml 
+  322  vi app-svc.yaml 
+  323  vi mongo-svc.yaml 
+  324  vi app-svc.yaml 
+  325  vi app.yaml 
+  326  vi app-svc.yaml 
+  327  vi app.yaml 
+  328  vi mongo
+  329  vi mongo-svc.yaml 
+  330  kubectl get svc
+  331  kubectl delete rsvp-svc 
+  332  kubectl get svc
+  333  kubectl delete svc rsvp-svc
+  334  kubectl get svc
+  335  clear
+  336  ls
+  337  kubectl create -f mongo-svc.yaml 
+  338  kubectl create -f app-svc.yaml 
+  339  vi app-svc.yaml 
+  340  kubectl create -f app-svc.yaml 
+  341  kubectl get svc
+  342  kubectl get pods 
+  343  kubectl exex -it mypod sh 
+  344  kubectl exec -it mypod sh 
+  345  kubectl exec -it webserver-79d6cffbd-7whvr
+  346  kubectl exec -it webserver-79d6cffbd-7whvr sh
+  347  kubectl get svc
+  348  kubectl get svc -name kube-system 
+  349  kubectl get svc -n kube-system 
+  350  clear
+  351  ls
+  352  vi frontend.yaml
+  353  kubectl create -f frontend.yaml 
+  354  vi frontendsvc.yaml
+  355  clear
+  356  ls
+  357  kubectl create -f frontendservice.yaml
+  358  mv frontendsvc.yaml frontendservice.yaml
+  359  kubectl create -f frontendservice.yaml
+  360  kubectl get svc
+  361  ls
+  362  kubectl create -f frontendservice.yaml
+  363  kubectl get svc
+  364  kubectl delete svc rsvp 
+  365  clear
+  366  kubectl create -f frontendservice.yaml
+  367  vi backendvol.yaml
+  368  vi backendservice.yaml
+  369  ubectl create -f backendvol.yaml
+  370  kubectl create -f backendvol.yaml
+  371  kubectl create -f backendservice.yaml
+  372  kubectl delete svc mongodb
+  373  kubectl create -f backendservice.yaml
+  374  kubectl get svc 
+  375  kubectl get deploy
+  376  cd /tmp/
+  377  ls
+  378  kubectl get pods
+  379  kubectl get pods -o wide
+  380  kubectl get svc
+  381  http://139.59.90.87:30721/
+  382  cler
+  383  pwd
+  384  clea
+  385  cd -
+  386  clear
+  387  ls
+  388  kubectl get svc
+  389  ls
+  390  cd ..
+  391  ls
+  392  cd cmd_history/
+  393  ls
+  394  history > kubenetics_day2_2

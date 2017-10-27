@@ -1,0 +1,47 @@
+    
+    install docker 
+    5  curl -fsSL get.docker.com -o get-docker.sh
+    6  sh get-docker.sh
+
+  install kubectl and other stuff
+
+    9  apt-get update && apt-get install -y apt-transport-https
+   10  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+   13  echo "deb http://apt.kubernetes.io/ kubernetes-xenial main"  /etc/apt/sources.list.d/kubernetes.list
+   14  apt-get update
+   15  apt-get install -y kubelet kubeadm
+   17  docker image ls 
+   18  kubeadm init --pod-network-cidr=192.168.0.0/16
+   19  mkdir -p $HOME/.kube
+   20  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   21  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   22  kubectl apply -f http://docs.projectcalico.org/v2.4/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+
+     #make other nodes as worker using 
+     root@worker-01:~# kubeadm join --token 3bbc59.fa54a2e8ffd53ea8 139.59.90.42:6443 --discovery-token-ca-cert-hash sha256:2a7a39b679fcc036a43c2e3801a640a94f407abb3e227ca3f90cc7c733b79d55
+
+   23  kubectl get nodes 
+   24  cat ~/.kube/config 
+   25  pwd
+   26  scp  ~/.kube/config  kpushpad@10.232.12.65:/Users/kpushpad/.kube/
+
+   ON local m/c 
+
+   KPUSHPAD-M-L29J:docker kpushpad$ cat multipod.yaml 
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: mymultipod
+   spec:
+     containers:
+   - name: nginx
+     image: nginx:alpine
+   ports:
+    - containerPort: 80
+   - name: redis 
+     image: redis
+    - name: memcached
+      image: memcached
+KPUSHPAD-M-L29J:docker kpushpad$ 
+
+   kubectl create -f multipod.yaml
