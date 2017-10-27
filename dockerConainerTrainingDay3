@@ -1,0 +1,425 @@
+
+#####Docekr swarm 
+
+#Docker swarm is nothing but working docker in cluster mode. Where docker take care of orchestration b/w docker instances. 
+
+#https://docs.docker.com/engine/swarm/#feature-highlights
+
+# Docker swarm and kburenetics both uses key-value store for storing clustering and other info.
+
+# Using Docker swarm and kubernetics we can configure nodes as either master or slave. 
+# There are many things in docker swarm like 
+
+=> After creating docker swarm all command on always run on master. Because everything get managed from master/manger 
+   node. 
+
+=> Docker swarm has concept of 'master/slave' , 'schedule , 'service discovery' 
+
+=> In case of docker swarm , we think of service rahter then container. we deal with services.  Scheduler will take 
+   care of creating container under the hood base on scale factor. 
+   
+ => we can scale up/down services using scale command and it will create that many containers required on cluster.
+ 
+ => Service are discovred and has virtual ip concept. Every service has name which resolves to some ip and it gets 
+    discovered same as DNS.
+   
+=> Docker swarm has concept of virtual IP. so even though only one node in cluster is running container , it is possible 
+    to access service from any node ip.  This is possible using virtual ip. 
+    
+=> Docker swarm has stack file which same as docker compose file. 
+    
+=>Auto scaling up/down 
+=>There can be many master and many salve for HA. 
+
+
+=> Kubernetics , docker swarm , amazon ecs are competative to eacg other. 
+   kubernaticis give much more controll compare to docker swarm.
+   
+   unit of deployment in kubernetrics is POD which is collection of one or more containers.
+   
+ => kubectl is program for cli intraction 
+   
+#################### Docker Swarm Lab ########################## 
+root@ubuntu-512mb-blr1-01:~# pwd
+/root
+
+
+
+node1 => x.y.z.121  (master/manger/leader)
+
+root@ubuntu-512mb-blr1-01:~# docker swarm init 
+Error response from daemon: could not choose an IP address to advertise since this system has multiple addresses on interface eth0 (139.59.32.121 and 10.47.0.6) - specify one with --advertise-addr
+root@ubuntu-512mb-blr1-01:~# docker swarm init --advertise-addr 139.59.32.121
+Swarm initialized: current node (wcsscv3jkg8z4iufcfo3gfmzj) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-3uu1sk58pbz1nmnh7jhbhzxl3sj3wydsatyxgbvewahh8i48bi-7s9vc8udk7d0cc442yrvwbwv8 139.59.32.121:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+root@ubuntu-512mb-blr1-01:~#
+ 
+ Run above commandon other two nodes => 
+ 
+ node2 =>x.y.z.145 (slave/worker)
+ 
+ root@ubuntu-512mb-blr1-01:~# docker swarm join --token SWMTKN-1-3uu1sk58pbz1nmnh7jhbhzxl3sj3wydsatyxgbvewahh8i48bi-7s9vc8udk7d0cc442yrvwbwv8 139.59.32.121:2377
+This node joined a swarm as a worker.
+root@ubuntu-512mb-blr1-01:~# 
+
+node3 => x.y.z.147
+root@ubuntu-512mb-blr1-01:~# docker swarm join --token SWMTKN-1-3uu1sk58pbz1nmnh7jhbhzxl3sj3wydsatyxgbvewahh8i48bi-7s9vc8udk7d0cc442yrvwbwv8 139.59.32.121:2377
+This node joined a swarm as a worker.
+root@ubuntu-512mb-blr1-01:~# 
+
+### All commands are run on master now onwards.
+
+
+# list all manger & worker 
+root@ubuntu-512mb-blr1-01:~# docker node ls 
+ID                            HOSTNAME               STATUS              AVAILABILITY        MANAGER STATUS
+cu2j7m3brfhlxmkl63rw3kc51     ubuntu-512mb-blr1-01   Ready               Active              
+maszdaf1kivxigj4ukxmd71f1     ubuntu-512mb-blr1-01   Ready               Active              
+wcsscv3jkg8z4iufcfo3gfmzj *   ubuntu-512mb-blr1-01   Ready               Active              Leader
+root@ubuntu-512mb-blr1-01:~#
+
+
+root@ubuntu-512mb-blr1-01:~# docker swarm join-token manager
+To add a manager to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-3uu1sk58pbz1nmnh7jhbhzxl3sj3wydsatyxgbvewahh8i48bi-egn2txpjgbhhioczmpyobrix0 139.59.32.121:2377
+
+root@ubuntu-512mb-blr1-01:~# 
+
+
+#promore worker to manager 
+
+
+root@ubuntu-512mb-blr1-01:~# docker node ls 
+ID                            HOSTNAME               STATUS              AVAILABILITY        MANAGER STATUS
+cu2j7m3brfhlxmkl63rw3kc51     ubuntu-512mb-blr1-01   Ready               Active              
+maszdaf1kivxigj4ukxmd71f1     ubuntu-512mb-blr1-01   Ready               Active              
+wcsscv3jkg8z4iufcfo3gfmzj *   ubuntu-512mb-blr1-01   Ready               Active              Leader
+root@ubuntu-512mb-blr1-01:~# docker node promote cu2j7m3brfhlxmkl63rw3kc51 --help
+
+
+root@ubuntu-512mb-blr1-01:~# docker node promote cu2j7m3brfhlxmkl63rw3kc51 
+Node cu2j7m3brfhlxmkl63rw3kc51 promoted to a manager in the swarm.
+root@ubuntu-512mb-blr1-01:~# 
+
+
+# demote manager to worker 
+
+
+Node cu2j7m3brfhlxmkl63rw3kc51 promoted to a manager in the swarm.
+root@ubuntu-512mb-blr1-01:~# docker node demote cu2j7m3brfhlxmkl63rw3kc51
+Manager cu2j7m3brfhlxmkl63rw3kc51 demoted in the swarm.
+root@ubuntu-512mb-blr1-01:~# docker node ls 
+ID                            HOSTNAME               STATUS              AVAILABILITY        MANAGER STATUS
+cu2j7m3brfhlxmkl63rw3kc51     ubuntu-512mb-blr1-01   Ready               Active              
+maszdaf1kivxigj4ukxmd71f1     ubuntu-512mb-blr1-01   Ready               Active              
+wcsscv3jkg8z4iufcfo3gfmzj *   ubuntu-512mb-blr1-01   Ready               Active              Leader
+root@ubuntu-512mb-blr1-01:~#
+
+### docker services 
+
+
+root@ubuntu-512mb-blr1-01:~# docker service create alpine ping 8.8.8.8
+z2gnjzstwmuvergq3oeany0ig
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-512mb-blr1-01:~# 
+
+
+root@ubuntu-512mb-blr1-01:~# docker service ls 
+ID                  NAME                MODE                REPLICAS            IMAGE               PORTS
+z2gnjzstwmuv        hardcore_bose       replicated          1/1                 alpine:latest       
+root@ubuntu-512mb-blr1-01:~# docker service ps z2gnjzstwmuv
+ID                  NAME                IMAGE               NODE                   DESIRED STATE       CURRENT STATE                ERROR               PORTS
+oidjdxbhtjpg        hardcore_bose.1     alpine:latest       ubuntu-512mb-blr1-01   Running             Running about a minute ago                       
+root@ubuntu-512mb-blr1-01:~#
+
+
+### scale service to 4 
+
+root@ubuntu-512mb-blr1-01:~# docker service scale 23b8b81ecc1e=4
+23b8b81ecc1e: Error: No such service: 23b8b81ecc1e
+root@ubuntu-512mb-blr1-01:~# docker service ls
+ID                  NAME                MODE                REPLICAS            IMAGE               PORTS
+z2gnjzstwmuv        hardcore_bose       replicated          1/1                 alpine:latest       
+root@ubuntu-512mb-blr1-01:~# docker service scale z2gnjzstwmuv=4
+z2gnjzstwmuv scaled to 4
+overall progress: 4 out of 4 tasks 
+1/4: running   [==================================================>] 
+2/4: running   [==================================================>] 
+3/4: running   [==================================================>] 
+4/4: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-512mb-blr1-01:~# docker service ls 
+ID                  NAME                MODE                REPLICAS            IMAGE               PORTS
+z2gnjzstwmuv        hardcore_bose       replicated          4/4                 alpine:latest       
+root@ubuntu-512mb-blr1-01:~# 
+
+
+
+root@ubuntu-512mb-blr1-01:~# docker service ps z2gnjzstwmuv
+ID                  NAME                IMAGE               NODE                   DESIRED STATE       CURRENT STATE            ERROR               PORTS
+oidjdxbhtjpg        hardcore_bose.1     alpine:latest       139.59.32.121          Running             Running 8 minutes ago                        
+fas3ye4zlmp3        hardcore_bose.2     alpine:latest       ubuntu-512mb-blr1-01   Running             Running 40 seconds ago                       
+vl3u9f1cdatt        hardcore_bose.3     alpine:latest       ubuntu-512mb-blr1-01   Running             Running 40 seconds ago                       
+owhmklc9abqd        hardcore_bose.4     alpine:latest       ubuntu-512mb-blr1-01   Running             Running 40 seconds ago                       
+root@ubuntu-512mb-blr1-01:~#
+
+#removing docker service 
+docker service rm <id|name>
+
+
+
+
+root@master-121:~# docker service create --name web nginx:alpine 
+dl85fof7qrvf9qfkbqioxbrn0
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+root@master-121:~# docker service scale web=3
+web scaled to 3
+overall progress: 3 out of 3 tasks 
+1/3: running   [==================================================>] 
+2/3: running   [==================================================>] 
+3/3: running   [==================================================>] 
+verify: Service converged 
+root@master-121:~# docker service ps web
+ID                  NAME                IMAGE               NODE                   DESIRED STATE       CURRENT STATE            ERROR               PORTS
+vkfpm0eg5eb2        web.1               nginx:alpine        ubuntu-512mb-blr1-01   Running             Running 43 seconds ago                       
+neo7qll8w4z7        web.2               nginx:alpine        ubuntu-512mb-blr1-01   Running             Running 12 seconds ago                       
+32s5qreaze16        web.3               nginx:alpine        master-121             Running             Running 12 seconds ago                       
+root@master-121:~# docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS               NAMES
+65847a7df38f        nginx:alpine        "nginx -g 'daemon ..."   23 seconds ago      Up 22 seconds       80/tcp              web.3.32s5qreaze16zsvauxmjyt1j0
+root@master-121:~# 
+
+
+# if you remove any container then schedule will bring it back
+
+root@master-121:~# docker container rm -f 65847a7df38f
+65847a7df38f
+root@master-121:~# docker container ls 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+root@master-121:~# docker container ls 
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                  PORTS               NAMES
+534b8bbfe435        nginx:alpine        "nginx -g 'daemon ..."   6 seconds ago       Up Less than a second   80/tcp              web.3.ddpo1b40pwafezkujil3c4y5j
+root@master-121:~#
+
+#publish service so that we can access it from outside.
+
+root@ubuntu-01-master:~# docker service create --name web --publish 80:80 nginx:alpine 
+34hkwi6j8y9bzsr5z7e5a856o
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-01-master:~# 
+
+####create overlay network so you can attach services to this n/w and so they can talk to each other 
+
+root@ubuntu-01-master:~# docker network create -d overlay rsvpnet 
+nr0d5nyiubse1w3crs7r0jdsy
+root@ubuntu-01-master:~# 
+
+# create mongodb service and attache to rsvpnet n/w 
+
+root@ubuntu-01-master:~# docker service create --name mongodb  --network=rsvpnet mongo:3.3
+
+root@ubuntu-01-master:~# docker service ps mongodb
+ID                  NAME                IMAGE               NODE                 DESIRED STATE       CURRENT STATE                ERROR               PORTS
+x1kowrgdh6ta        mongodb.1           mongo:3.3           ubuntu-worker1-145   Running             Running about a minute ago                       
+
+# create teamcloudyuga/rsvpapp which python based app to same n/w 
+  and publish that app to listen on 30000 ,
+  
+root@ubuntu-01-master:~# docker service create --name web -e MONGODB_HOST=mongodb --publish 5000 --network=rsvpnet teamcloudyuga/rsvpapp
+ixb65xwvbsrzgmpknzdwn8jfv
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-01-master:~# docker service ls 
+ID                  NAME                MODE                REPLICAS            IMAGE                          PORTS
+6kb9rrspef4s        mongodb             replicated          1/1                 mongo:3.3                      
+ixb65xwvbsrz        web                 replicated          1/1                 teamcloudyuga/rsvpapp:latest   *:30000->5000/tcp
+root@ubuntu-01-master:~#
+
+
+ open http://139.59.69.147:30000/=> service should be running 
+ 
+ 
+ # now scale web service to 3 
+ 
+ 
+ root@ubuntu-01-master:~# docker service scale web=3
+web scaled to 3
+overall progress: 3 out of 3 tasks 
+1/3: running   [==================================================>] 
+2/3: running   [==================================================>] 
+3/3: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-01-master:~#
+
+Now we are running three container (teamyoug rsvp app) in three nodes and every time request to diffrent one.
+
+
+# go any into any contaner in docker swarm and it will run DNS service locally 
+
+root@ubuntu-worker1-145:~# docker container exec -it ffc9ac6a2f9b sh
+#
+# cat /etc/resolv.conf 
+nameserver 127.0.0.11
+options ndots:0
+# 
+
+
+
+### update one of the service image every 30s 
+
+root@ubuntu-01-master:~# docker service update --image nkhare/rsvpapp:mooc --update-delay 30s web 
+web
+overall progress: 3 out of 3 tasks 
+1/3: running   [==================================================>] 
+2/3: running   [==================================================>] 
+3/3: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-01-master:~#
+
+
+##### Docker stack file
+  1. create same docker compose file with some tweak
+
+root@ubuntu-01-master:~/stack# pwd
+/root/stack
+root@ubuntu-01-master:~/stack# ls
+docker-compose.yaml
+root@ubuntu-01-master:~/stack# docker stack deploy -c docker-compose.yaml  rsvp 
+Ignoring deprecated options:
+
+expose: Exposing ports is unnecessary - services on the same network can access each other's containers on any port.
+
+Creating network rsvp_rsvpnet
+Creating service rsvp_mongodb
+Creating service rsvp_web
+root@ubuntu-01-master:~/stack# 
+
+root@ubuntu-01-master:~/stack# docker stack ps rsvp 
+ID                  NAME                IMAGE                        NODE                DESIRED STATE       CURRENT STATE                ERROR               PORTS
+ilu6939vdhpe        rsvp_web.1          teamcloudyuga/rsvpapp:mooc   ubuntu-01-master    Running             Running about a minute ago                       
+vpybxvnra1xo        rsvp_mongodb.1      mongo:3.3                    ubuntu-01-master    Running             Running 2 minutes ago                            
+root@ubuntu-01-master:~/stack# docker service ls 
+ID                  NAME                MODE                REPLICAS            IMAGE                        PORTS
+pfiz041vlkt7        rsvp_mongodb        replicated          1/1                 mongo:3.3                    
+2aexn1xsrcai        rsvp_web            replicated          1/1                 teamcloudyuga/rsvpapp:mooc   *:5000->5000/tcp
+root@ubuntu-01-master:~/stack# docker service ps mongodb
+no such service: mongodb
+root@ubuntu-01-master:~/stack# docker service ps rsvp_mongodb
+ID                  NAME                IMAGE               NODE                DESIRED STATE       CURRENT STATE           ERROR               PORTS
+vpybxvnra1xo        rsvp_mongodb.1      mongo:3.3           ubuntu-01-master    Running             Running 2 minutes ago                       
+root@ubuntu-01-master:~/stack# 
+
+root@ubuntu-01-master:~/stack# docker stack rm rsvp 
+Removing service rsvp_mongodb
+Removing service rsvp_web
+Removing network rsvp_rsvpnet
+root@ubuntu-01-master:~/stack# 
+
+### stack file with visaualizer 
+
+ root@ubuntu-01-master:~/stack# docker stack deploy -c docker-compose.yaml  rsvp 
+Ignoring deprecated options:
+
+expose: Exposing ports is unnecessary - services on the same network can access each other's containers on any port.
+
+Creating service rsvp_web
+Creating service rsvp_visualizer
+Creating service rsvp_mongodb
+root@ubuntu-01-master:~/stack#
+
+ accress visualizer at http://139.59.32.121:8080/
+ 
+ ### stortring scerte info 
+ 
+ root@ubuntu-01-master:~/dockerGuide# echo "test" | docker secret create mysql_root_password -
+4gg55cvx9v727c86j6exos8ey
+root@ubuntu-01-master:~/dockerGuide# docker service create --name demo --secret mysql_root_password -e MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql_root_password mariadb 
+o1ciqxjjpo3r622kp0226fc4z
+overall progress: 1 out of 1 tasks 
+1/1: running   [==================================================>] 
+verify: Service converged 
+root@ubuntu-01-master:~/dockerGuide#
+
+
+################ installation of kubernetrics 
+
+install docker on all three vms.
+install kubernetics.
+
+
+root@master-01:~# docker image ls
+REPOSITORY                                               TAG                 IMAGE ID            CREATED             SIZE
+gcr.io/google_containers/kube-apiserver-amd64            v1.8.2              6278a1092d08        37 hours ago        194MB
+gcr.io/google_containers/kube-controller-manager-amd64   v1.8.2              5eabb0eae58b        37 hours ago        129MB
+gcr.io/google_containers/kube-scheduler-amd64            v1.8.2              b48970f8473e        37 hours ago        54.9MB
+gcr.io/google_containers/kube-proxy-amd64                v1.8.2              88e2c85d3d02        37 hours ago        93.1MB
+gcr.io/google_containers/etcd-amd64                      3.0.17              243830dae7dd        8 months ago        169MB
+gcr.io/google_containers/pause-amd64                     3.0                 99e59f495ffa        18 months ago       747kB
+root@master-01:~# 
+
+
+root@master-01:~# mkdir -p $HOME/.kube
+root@master-01:~# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+root@master-01:~# sudo chown $(id -u):$(id -g) $HOME/.kube/config
+root@master-01:~# kubectl get nodes
+NAME        STATUS     ROLES     AGE       VERSION
+master-01   NotReady   master    7m        v1.8.2
+root@master-01:~# 
+
+### now control from your local m/c 
+on your mac book => 
+
+1.  copy ~/.kube/config file to /users/kpushpad/.kube/config
+2. install kubectl on your mac 
+
+curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/darwin/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+now onwards you can controle kubernetics from you mac. 
+
+KPUSHPAD-M-L29J:.kube kpushpad$ kubectl get nodes 
+NAME        STATUS    ROLES     AGE       VERSION
+master-01   Ready     master    20m       v1.8.2
+woker-02    Ready     <none>    18m       v1.8.2
+worker-01   Ready     <none>    18m       v1.8.2
+KPUSHPAD-M-L29J:.kube kpushpad$ 
+
+KPUSHPAD-M-L29J:docker kpushpad$ cat pod.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+ containers:
+ - name: nginx
+   image: nginx:alpine
+   ports:
+    containerPort: 80
+KPUSHPAD-M-L29J:docker kpushpad$ 
+
+
+KPUSHPAD-M-L29J:docker kpushpad$ kubectl create -f pod.yaml 
+pod "mypod" created
+KPUSHPAD-M-L29J:docker kpushpad$ 
+
+
+KPUSHPAD-M-L29J:docker kpushpad$ kubectl get pods 
+NAME        READY     STATUS    RESTARTS   AGE
+mypod       1/1       Running   0          1m
+mypod-uma   1/1       Running   0          1m
+KPUSHPAD-M-L29J:docker kpushpad$
