@@ -35,15 +35,29 @@
 => Kubernetics , docker swarm , amazon ecs are competative to eacg other. 
    kubernaticis give much more controll compare to docker swarm.
    
-   unit of deployment in kubernetrics is POD which is collection of one or more containers.
+   unit of deployment in kubernetrics is POD which is collection of one or more containers. 
    
  => kubectl is program for cli intraction 
+ 
+ => we can copy ~/.kube/config to /users/kpushpad/.kube/config and install kubectl on your mac and you can control kubernetics. 
+   
+ =>  Replica sets => desired state verses current state matching
+ 
+ => Lables and selectors , assign label/tag to obecjts 
+ 
+ =>you can access pods using their ips. but if pod get restarted then it will have diff ip. so 
+   you can logically group pods make it as services. 
+ 
+ => Namespace is seperation of your project. 
+ 
+ => Services allways have virtual ip and always get resolved to ip. 
+   https://kubernetes.io/docs/concepts/services-networking/service
+   
+   
    
 #################### Docker Swarm Lab ########################## 
 root@ubuntu-512mb-blr1-01:~# pwd
 /root
-
-
 
 node1 => x.y.z.121  (master/manger/leader)
 
@@ -125,7 +139,7 @@ root@ubuntu-512mb-blr1-01:~#
 ### docker services 
 
 
-root@ubuntu-512mb-blr1-01:~# docker service create alpine ping 8.8.8.8
+root@ubuntu-512mb-blr1-01:~#docker service create alpine ping 8.8.8.8
 z2gnjzstwmuvergq3oeany0ig
 overall progress: 1 out of 1 tasks 
 1/1: running   [==================================================>] 
@@ -227,7 +241,8 @@ root@ubuntu-01-master:~# docker network create -d overlay rsvpnet
 nr0d5nyiubse1w3crs7r0jdsy
 root@ubuntu-01-master:~# 
 
-# create mongodb service and attache to rsvpnet n/w 
+# create 
+db service and attache to rsvpnet n/w 
 
 root@ubuntu-01-master:~# docker service create --name mongodb  --network=rsvpnet mongo:3.3
 
@@ -329,7 +344,7 @@ Removing service rsvp_web
 Removing network rsvp_rsvpnet
 root@ubuntu-01-master:~/stack# 
 
-### stack file with visaualizer 
+### stack file with visaualizer , .yaml is there in this git
 
  root@ubuntu-01-master:~/stack# docker stack deploy -c docker-compose.yaml  rsvp 
 Ignoring deprecated options:
@@ -358,8 +373,9 @@ root@ubuntu-01-master:~/dockerGuide#
 ################ installation of kubernetrics 
 
 install docker on all three vms.
-install kubernetics.
+install kubernetics.  <<< steps are added as command history >>>>>>>
 
+<<< after init master , it will bring many images. >>>>>>
 
 root@master-01:~# docker image ls
 REPOSITORY                                               TAG                 IMAGE ID            CREATED             SIZE
@@ -399,6 +415,7 @@ woker-02    Ready     <none>    18m       v1.8.2
 worker-01   Ready     <none>    18m       v1.8.2
 KPUSHPAD-M-L29J:.kube kpushpad$ 
 
+<<< create new POD >>>>
 KPUSHPAD-M-L29J:docker kpushpad$ cat pod.yaml 
 apiVersion: v1
 kind: Pod
@@ -423,3 +440,673 @@ NAME        READY     STATUS    RESTARTS   AGE
 mypod       1/1       Running   0          1m
 mypod-uma   1/1       Running   0          1m
 KPUSHPAD-M-L29J:docker kpushpad$
+
+#### Replica sets and deployment 
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl run mynginx --image nginx:alpine --replicas=3
+deployment "mynginx" created
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get deployments 
+NAME         DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+mynginx      3         3         3            3           22s
+mynginxuma   2         2         2            2           24s
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get replicasets
+NAME                    DESIRED   CURRENT   READY     AGE
+mynginx-794946779f      3         3         3         57s
+
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods
+NAME                          READY     STATUS    RESTARTS   AGE
+mymultipod                    3/3       Running   0          17h
+mynginx-794946779f-fz8pt      1/1       Running   0          1m
+mynginx-794946779f-hj2w9      1/1       Running   0          1m
+mynginx-794946779f-skkvm      1/1       Running   0          1m
+
+mypod                         1/1       Running   0          17h
+mypod-ghost                   3/3       Running   0          17h
+
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+<<<<< get wide view of all pods >>>>>>>>
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods -o wide 
+NAME                          READY     STATUS    RESTARTS   AGE       IP              NODE
+mymultipod                    3/3       Running   0          17h       192.168.171.2   worker-01
+mynginx-794946779f-fz8pt      1/1       Running   0          4m        192.168.171.5   worker-01
+mynginx-794946779f-hj2w9      1/1       Running   0          4m        192.168.171.4   worker-01
+mynginx-794946779f-skkvm      1/1       Running   0          4m        192.168.69.5    woker-02
+mynginxuma-7557b8ff79-8rc4f   1/1       Running   0          4m        192.168.171.3   worker-01
+mynginxuma-7557b8ff79-zhx2p   1/1       Running   0          4m        192.168.69.4    woker-02
+mypod                         1/1       Running   0          17h       192.168.171.1   worker-01
+mypod-ghost                   3/3       Running   0          17h       192.168.69.3    woker-02
+mypod-uma                     1/1       Running   0          17h       192.168.69.2    woker-02
+
+<<<< dump all info into yaml about all pods>>>>>>>
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods -o yaml
+
+
+<<<< deleting one pod will make it run again  >>>>>
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl delete pod mynginx-794946779f-fz8pt
+pod "mynginx-794946779f-fz8pt" deleted
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+<<< edit deployment config , like chagning replica set to 2 >>>>>>>>
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl edit deployment mynginx
+
+
+<<<<< scale it to 6 replicas >>>>>>>>>
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl scale --replicas=6 deployment/mynginx 
+deployment "mynginx" scaled
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods 
+NAME                          READY     STATUS    RESTARTS   AGE
+mymultipod                    3/3       Running   0          17h
+mynginx-794946779f-fsn8s      1/1       Running   0          7s
+mynginx-794946779f-grqkf      1/1       Running   0          8m
+mynginx-794946779f-hj2w9      1/1       Running   0          14m
+mynginx-794946779f-hzhlc      1/1       Running   0          7s
+mynginx-794946779f-q2j25      1/1       Running   0          7s
+mynginx-794946779f-skkvm      1/1       Running   0          14m
+mynginxuma-7557b8ff79-8rc4f   1/1       Running   0          14m
+mynginxuma-7557b8ff79-zhx2p   1/1       Running   0          14m
+mypod                         1/1       Running   0          17h
+mypod-ghost                   3/3       Running   0          17h
+mypod-uma                     1/1       Running   0          17h
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+<<<<< update image for deployment. it will create duplicate replica and update image of evenry pod one by one >>>>>>
+
+   updating from whatever to nginx:latest .  you need to specify 'mynginx' which is name of container. 
+   
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl set image deployment/mynginx mynginx=nginx:latest 
+deployment "mynginx" image updated
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get rs
+NAME                    DESIRED   CURRENT   READY     AGE
+mynginx-78c8fb784c      6         6         6         56s
+mynginx-794946779f      0         0         0         24m
+mynginxuma-7557b8ff79   2         2         2         24m
+KPUSHPAD-M-L29J:~ 
+kpushpad$ 
+
+
+<<<<< Recording deployment config so that we can roll back in future . it is like checkpoiting >>>>>
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl set image deployment/mynginx mynginx=nginx:1.7.9 --record 
+deployment "mynginx" image updated
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+<<<<<< get all checkpoint or roll out >>>>>>>>>>>>
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl rollout history deployment/mynginx 
+deployments "mynginx"
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+3         kubectl set image deployment/mynginx mynginx=nginx:1.7.9 --record=true
+
+KPUSHPAD-M-L29J:~ kpushpad
+
+
+<<<<<<<<<<<< let roll out now >>>>>>>>>>>
+
+
+kubectl rollout undo deployment/mynginx --to-revision=<resvios_num>
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl rollout history deployment/mynginx 
+deployments "mynginx"
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+3         kubectl set image deployment/mynginx mynginx=nginx:1.7.9 --record=true
+4         kubectl set image deployment/mynginx mynginx=nginx:2394237498739284729
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl rollout undo deployment/mynginx --to-revision=3
+deployment "mynginx" rolled back
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+
+<<< labels and seletors>>
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods --show-labels
+NAME                          READY     STATUS    RESTARTS   AGE       LABELS
+mymultipod                    3/3       Running   0          18h       <none>
+mynginx-77f4ccc565-5glkc      1/1       Running   0          16m       pod-template-hash=3390777121,run=mynginx
+mynginx-77f4ccc565-7w7vn      1/1       Running   0          8m        pod-template-hash=3390777121,run=mynginx
+mynginx-77f4ccc565-ph6zw      1/1       Running   0          16m       pod-template-hash=3390777121,run=mynginx
+mynginx-77f4ccc565-qbvfb      1/1       Running   0          16m       pod-template-hash=3390777121,run=mynginx
+mynginx-77f4ccc565-v2tcf      1/1       Running   0          16m       pod-template-hash=3390777121,run=mynginx
+mynginx-77f4ccc565-xx8vp      1/1       Running   0          16m       pod-template-hash=3390777121,run=mynginx
+mynginxuma-7557b8ff79-8rc4f   1/1       Running   0          46m       pod-template-hash=3113649935,run=mynginxuma
+mynginxuma-7557b8ff79-zhx2p   1/1       Running   0          46m       pod-template-hash=3113649935,run=mynginxuma
+mypod                         1/1       Running   0          18h       <none>
+mypod-ghost                   3/3       Running   0          18h       <none>
+mypod-uma                     1/1       Running   0          18h       <none>
+KPUSHPAD-M-L29J:~ kpushpad$
+
+
+chang git docker-file/pod.yaml to label and check using --show labels.
+
+root@master-01:~/dockerGuide/docker-file# kubectl apply -f pod.yaml 
+Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
+pod "mypod" configured
+root@master-01:~/dockerGuide/docker-file# 
+
+
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods --show-labels
+NAME                          READY     STATUS    RESTARTS   AGE       LABELS
+mymultipod                    3/3       Running   0          18h       <none>
+
+
+mynginxuma-7557b8ff79-8rc4f   1/1       Running   0          52m       pod-template-hash=3113649935,run=mynginxuma
+mynginxuma-7557b8ff79-zhx2p   1/1       Running   0          52m       pod-template-hash=3113649935,run=mynginxuma
+mypod                         1/1       Running   0          18h       class=cisco
+mypod-ghost                   3/3       Running   0          18h       <none>
+mypod-uma                     1/1       Running   0          18h       class=cisco
+KPUSHPAD-M-L29J:~ kpushpad$
+
+<<<< select/filter pods based on labels/tags >>>>>>>
+
+root@master-01:~/dockerGuide/docker-file# kubectl get pods -l class=cisco
+NAME        READY     STATUS    RESTARTS   AGE
+mypod       1/1       Running   0          18h
+mypod-uma   1/1       Running   0          18h
+root@master-01:~/dockerGuide/docker-file# 
+
+
+root@master-01:~/dockerGuide/docker-file# kubectl get pods -l run=mynginx 
+NAME                       READY     STATUS    RESTARTS   AGE
+mynginx-77f4ccc565-5glkc   1/1       Running   0          33m
+mynginx-77f4ccc565-7w7vn   1/1       Running   0          25m
+mynginx-77f4ccc565-ph6zw   1/1       Running   0          33m
+mynginx-77f4ccc565-qbvfb   1/1       Running   0          33m
+mynginx-77f4ccc565-v2tcf   1/1       Running   0          33m
+mynginx-77f4ccc565-xx8vp   1/1       Running   0          33m
+root@master-01:~/dockerGuide/docker-file#
+
+As your can connect to pod using their ip address. 
+
+
+<<<< creating services >>>>>
+
+ it create mynginx service with ip 10.99.46.154
+ 
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl expose deployment/mynginx --port 80
+service "mynginx" exposed
+KPUSHPAD-M-L29J:~ kpushpad$ kubtectl get service
+-bash: kubtectl: command not found
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get service
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   19h
+mynginx      ClusterIP   10.99.46.154   <none>        80/TCP    18s
+KPUSHPAD-M-L29J:~ kpushpad$
+
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl describe svc mynginx 
+Name:              mynginx
+Namespace:         default
+Labels:            run=mynginx
+Annotations:       <none>
+Selector:          run=mynginx
+Type:              ClusterIP
+IP:                10.99.46.154
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         192.168.171.11:80,192.168.171.12:80,192.168.171.13:80 + 3 more...
+Session Affinity:  None
+Events:            <none>
+KPUSHPAD-M-L29J:~ kpushpad$
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl scale --replicas=2 deployment/mynginx 
+deployment "mynginx" scaled
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl describe svc mynginx 
+Name:              mynginx
+Namespace:         default
+Labels:            run=mynginx
+Annotations:       <none>
+Selector:          run=mynginx
+Type:              ClusterIP
+IP:                10.99.46.154
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         192.168.171.11:80,192.168.69.11:80
+Session Affinity:  None
+Events:            <none>
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl edit service mynginx 
+service "mynginx" edited
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+change to => run: mynginx-1
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl describe svc mynginx 
+Name:              mynginx
+Namespace:         default
+Labels:            run=mynginx
+Annotations:       <none>
+Selector:          run=mynginx-1
+Type:              ClusterIP
+IP:                10.99.46.154
+Port:              <unset>  80/TCP
+TargetPort:        80/TCP
+Endpoints:         <none>
+Session Affinity:  None
+Events:            <none>
+KPUSHPAD-M-L29J:~ kpushpad$
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl delete svc mynginx 
+service "mynginx" deleted
+KPUSHPAD-M-L29J:~
+
+
+<<<< expose port outside >>>>>
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl expose deployment/mynginx --port 80 --type=NodePort
+service "mynginx" exposed
+KPUSHPAD-M-L29J:~ kpushpad$ 
+\
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl describe svc mynginx 
+Name:                     mynginx
+Namespace:                default
+Labels:                   run=mynginx
+Annotations:              <none>
+Selector:                 run=mynginx
+Type:                     NodePort
+IP:                       10.106.123.218
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31822/TCP
+Endpoints:                192.168.171.11:80,192.168.69.11:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+KPUSHPAD-M-L29J:~ kpushpad$
+
+access http://139.59.90.78:31822/   , so port 31822 is expose on all worker node ip. 
+
+<<<<< namespace >>>>>>
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get namespaces 
+NAME          STATUS    AGE
+default       Active    20h
+kube-public   Active    20h
+kube-system   Active    20h
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get pods -n kube-system 
+NAME                                        READY     STATUS    RESTARTS   AGE
+calico-etcd-7bcg7                           1/1       Running   0          20h
+calico-node-8f5d5                           2/2       Running   0          20h
+calico-node-r959c                           2/2       Running   0          20h
+calico-node-zjlvz                           2/2       Running   1          20h
+calico-policy-controller-59fc4f7888-6f8q2   1/1       Running   0          20h
+etcd-master-01                              1/1       Running   0          20h
+kube-apiserver-master-01                    1/1       Running   0          20h
+kube-controller-manager-master-01           1/1       Running   0          20h
+kube-dns-545bc4bfd4-5d777                   3/3       Running   0          20h
+kube-proxy-lpjpt                            1/1       Running   0          20h
+kube-proxy-p92tl                            1/1       Running   0          20h
+kube-proxy-t5wd5                            1/1       Running   0          20h
+kube-scheduler-master-01                    1/1       Running   0          20h
+KPUSHPAD-M-L29J:~ kpushpad$
+
+
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl create namespace kpushpad 
+namespace "kpushpad" created
+KPUSHPAD-M-L29J:~ kpushpad$ kubectl get namespaces 
+NAME          STATUS    AGE
+default       Active    20h
+kpushpad      Active    4s
+kube-public   Active    20h
+kube-system   Active    20h
+KPUSHPAD-M-L29J:~ kpushpad$ 
+
+
+you can pass namespace in docker/pod_namespace.yaml file as well 
+
+ metadata:
+    namespace: kpushpad 
+    
+    
+    root@master-01:~/dockerGuide/docker-file# vi pod_namepsace.yaml 
+root@master-01:~/dockerGuide/docker-file# 
+root@master-01:~/dockerGuide/docker-file# 
+root@master-01:~/dockerGuide/docker-file# kubectl apply -f pod_namepsace.yaml 
+pod "mypod" created
+root@master-01:~/dockerGuide/docker-file# kubectl get pods -n kpushpad 
+NAME      READY     STATUS    RESTARTS   AGE
+mypod     1/1       Running   0          13s
+root@master-01:~/dockerGuide/docker-file#
+
+
+#### Annotation 
+
+  ##### proxy 
+  
+  KPUSHPAD-M-L29J:~ kpushpad$ kubectl proxy 
+Starting to serve on 127.0.0.1:8001
+
+
+##### RBAC 
+
+
+root@master-01:~# mkdir -p ~/rbac
+root@master-01:~# cd ~/rbac
+root@master-01:~/rbac# pwd
+/root/rbac
+root@master-01:~/rbac# ls
+root@master-01:~/rbac# kubectl create namespace kpushpad
+Error from server (AlreadyExists): namespaces "kpushpad" already exists
+root@master-01:~/rbac# openssl genrsa -out nkhare.key 2048
+Generating RSA private key, 2048 bit long modulus
+.....................+++
+.....................+++
+e is 65537 (0x10001)
+root@master-01:~/rbac# 
+
+root@master-01:~/rbac# kubectl create namespace cloudyuga
+namespace "cloudyuga" created
+
+root@master-01:~/rbac# openssl req -new -key nkhare.key -out nkhare.csr -subj "/CN=nkhare/O=cloudyuga"
+root@master-01:~/rbac# openssl x509 -req -in nkhare.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out nkhare.crt -days 500
+Signature ok
+subject=/CN=nkhare/O=cloudyuga
+Getting CA Private Key
+root@master-01:~/rbac# kubectl config set-credentials nkhare --client-certificate=/root/rbac/nkhare.crt --client-key=/root/rbac/nkhare.key
+User "nkhare" set.
+root@master-01:~/rbac# kubectl config set-context nkhare-context --cluster=kubernetes --namespace=cloudyuga --user=nkhare
+Context "nkhare-context" created.
+root@master-01:~/rbac#
+
+root@master-01:~/rbac# kubectl --context=nkhare-context get pods
+Error from server (Forbidden): pods is forbidden: User "nkhare" cannot list pods in the namespace "cloudyuga"
+root@master-01:~/rbac# 
+
+
+
+root@master-01:~/rbac# cat role.yaml 
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: cloudyuga 
+  name: deployment-manager
+rules:
+ - apiGroups: ["", "extensions", "apps"]
+   resources: ["deployments", "replicasets", "pods"]
+   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+root@master-01:~/rbac#
+
+
+root@master-01:~/rbac# kubectl create namespace cloudyuga
+namespace "cloudyuga" created
+root@master-01:~/rbac# kubectl create -f role.yaml
+role "deployment-manager" created
+root@master-01:~/rbac#
+
+
+root@master-01:~/rbac# cat role-binding.yaml 
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: deployment-manager-binding
+  namespace: cloudyuga 
+subjects:
+- kind: User
+  name: nkhare 
+  apiGroup: ""
+roleRef:
+  kind: Role
+  name: deployment-manager
+  apiGroup: ""
+root@master-01:~/rbac# kubectl create -f rolebinding.yaml 
+error: the path "rolebinding.yaml" does not exist
+root@master-01:~/rbac# kubectl create -f role-binding.yaml 
+rolebinding "deployment-manager-binding" created
+root@master-01:~/rbac# 
+
+root@master-01:~/rbac# kubectl --context=nkhare-context get pods
+No resources found.
+root@master-01:~/rbac#
+
+root@master-01:~/rbac# kubectl  get pods
+NAME                          READY     STATUS    RESTARTS   AGE
+mymultipod                    3/3       Running   0          20h
+mynginx-77f4ccc565-ph6zw      1/1       Running   0          2h
+mynginx-77f4ccc565-qbvfb      1/1       Running   0          2h
+mynginxuma-7557b8ff79-5fgdg   1/1       Running   0          1h
+mynginxuma-7557b8ff79-8rc4f   1/1       Running   0          2h
+mynginxuma-7557b8ff79-cv7pf   1/1       Running   0          1h
+mynginxuma-7557b8ff79-zhx2p   1/1       Running   0          2h
+mypod                         1/1       Running   0          20h
+mypod-ghost                   3/3       Running   0          20h
+mypod-uma                     1/1       Running   0          20h
+root@master-01:~/rbac#
+
+
+root@master-01:~/rbac# kubectl delete deployments --all
+deployment "mynginx" deleted
+deployment "mynginxuma" deleted
+root@master-01:~/rbac# kubectl delete svc mynginx 
+service "mynginx" deleted
+root@master-01:~/rbac# kubectl delete pods --all 
+pod "mymultipod" deleted
+pod "mynginxuma-7557b8ff79-5fgdg" deleted
+pod "mypod" deleted
+pod "mypod-ghost" deleted
+pod "mypod-uma" deleted
+root@master-01:~/rbac# kubrctl get svc 
+kubrctl: command not found
+root@master-01:~/rbac# kubectl get svc 
+NAME         TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP      10.96.0.1       <none>        443/TCP          20h
+mynginxuma   LoadBalancer   10.99.135.155   <pending>     8080:31471/TCP   59m
+root@master-01:~/rbac# kubectl delete svc mynginxuma 
+service "mynginxuma" deleted
+root@master-01:~/rbac# 
+
+
+
+
+root@master-01:~/dockerGuide/kubernetics# kubectl get nodes 
+NAME        STATUS    ROLES     AGE       VERSION
+master-01   Ready     master    20h       v1.8.2
+woker-02    Ready     <none>    20h       v1.8.2
+worker-01   Ready     <none>    20h       v1.8.2
+root@master-01:~/dockerGuide/kubernetics# kubectl get replicasets
+NAME                  DESIRED   CURRENT   READY     AGE
+webserver-79d6cffbd   3         3         3         53s
+root@master-01:~/dockerGuide/kubernetics# kubectl get pods
+NAME                        READY     STATUS    RESTARTS   AGE
+webserver-79d6cffbd-7whvr   1/1       Running   0          1m
+webserver-79d6cffbd-kl986   1/1       Running   0          1m
+webserver-79d6cffbd-swb4k   1/1       Running   0          1m
+root@master-01:~/dockerGuide/kubernetics# vi webserver-svc.yaml
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f webserver-svc.yaml
+service "web-service" created
+root@master-01:~/dockerGuide/kubernetics# kubectl get service
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes    ClusterIP   10.96.0.1       <none>        443/TCP        21h
+web-service   NodePort    10.99.253.133   <none>        80:31700/TCP   11s
+root@master-01:~/dockerGuide/kubernetics# kubectl describe svc web-service
+Name:                     web-service
+Namespace:                default
+Labels:                   run=web-service
+Annotations:              <none>
+Selector:                 app=webserver
+Type:                     NodePort
+IP:                       10.99.253.133
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  31700/TCP
+Endpoints:                192.168.171.18:80,192.168.171.19:80,192.168.69.19:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+root@master-01:~/dockerGuide/kubernetics#
+
+
+root@master-01:~/dockerGuide/kubernetics# cat mongo.yaml 
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongodb 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongodb 
+    spec:
+      containers:
+      - name: mongodb 
+        image: mongo:3.3 
+        ports:
+        - containerPort: 5000
+       environment:
+       MONGODB_DATABASE: rsvpdata 
+root@master-01:~/dockerGuide/kubernetics# cat mongo-svc.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  labels:
+    run: mongo-service
+spec:
+  type: NodePort
+  ports:
+  - port: 5000
+    protocol: TCP
+  selector:
+    app: mongodb 
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f mongo-svc.yaml 
+
+
+
+<<<< DNS service >>>>>
+root@master-01:~/dockerGuide/kubernetics# kubectl exec -it webserver-79d6cffbd-7whvr sh
+/ # 
+/ # cat /etc/resolv.conf 
+nameserver 10.96.0.10
+search default.svc.cluster.local svc.cluster.local cluster.local
+options ndots:5
+/ # 
+
+
+root@master-01:~/dockerGuide/kubernetics# kubectl get svc -n kube-system 
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+calico-etcd   ClusterIP   10.96.232.136   <none>        6666/TCP        22h
+kube-dns      ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP   22h
+root@master-01:~/dockerGuide/kubernetics# 
+
+
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f frontendservice.yaml
+service "rsvp" created
+root@master-01:~/dockerGuide/kubernetics# vi backendvol.yaml
+root@master-01:~/dockerGuide/kubernetics# vi backendservice.yaml
+root@master-01:~/dockerGuide/kubernetics# ubectl create -f backendvol.yaml
+ubectl: command not found
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f backendvol.yaml
+deployment "rsvp-db" created
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f backendservice.yaml
+Error from server (AlreadyExists): error when creating "backendservice.yaml": services "mongodb" already exists
+root@master-01:~/dockerGuide/kubernetics# kubectl delete svc mongodb
+service "mongodb" deleted
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f backendservice.yaml
+service "mongodb" created
+root@master-01:~/dockerGuide/kubernetics# kubectl get svc 
+NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes               ClusterIP   10.96.0.1        <none>        443/TCP          23h
+mongo-service-usriniva   ClusterIP   10.111.103.58    <none>        27017/TCP        37m
+mongodb                  ClusterIP   10.107.123.149   <none>        27017/TCP        10s
+rsvp                     NodePort    10.102.50.194    <none>        80:30721/TCP     2m
+web-service-usriniva     NodePort    10.97.227.19     <none>        5007:32334/TCP   37m
+root@master-01:~/dockerGuide/kubernetics# kubectl get deploy
+NAME                 DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+mongodb-usriniva     1         1         1            1           38m
+rsvp                 1         1         1            1           4m
+rsvp-db              1         1         1            1           1m
+rsvp-usriniva        1         1         1            1           1m
+webserver            3         3         3            3           2h
+webserver-usriniva   3         3         3            3           38m
+root@master-01:~/dockerGuide/kubernetics# 
+
+
+
+root@master-01:/tmp# kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP        23h
+mongodb      ClusterIP   10.107.123.149   <none>        27017/TCP      3m
+rsvp         NodePort    10.102.50.194    <none>        80:30721/TCP   5m
+root@master-01:/tmp# 
+
+
+access http://139.59.90.87:30721/
+
+
+
+persisten voulme => 
+
+
+root@master-01:~/dockerGuide/kubernetics# ls
+app-svc.yaml  backendservice.yaml  frontendservice.yaml  mongo-svc.yaml  webserver-svc.yaml
+app.yaml      backendvol.yaml      frontend.yaml         mongo.yaml      webserver.yaml
+root@master-01:~/dockerGuide/kubernetics# vi pv.yaml
+root@master-01:~/dockerGuide/kubernetics#  kubectl create -f pv.yaml
+persistentvolume "pv0001" created
+root@master-01:~/dockerGuide/kubernetics#
+
+
+root@master-01:~/dockerGuide/kubernetics# vi pvclaim.yaml
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f pvclaim.yaml
+persistentvolumeclaim "myclaim-1" created
+root@master-01:~/dockerGuide/kubernetics# kubectl get pvc
+NAME        STATUS    VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+myclaim-1   Bound     pv0001    1Gi        RWO                           15s
+root@master-01:~/dockerGuide/kubernetics# kubectl get pv
+NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM               STORAGECLASS   REASON    AGE
+pv0001    1Gi        RWO            Retain           Bound     default/myclaim-1                            2m
+root@master-01:~/dockerGuide/kubernetics#
+
+
+
+root@master-01:~/dockerGuide/kubernetics# ls
+app-svc.yaml  backendpvc.yaml      backendvol.yaml  frontendservice.yaml  mongo-svc.yaml  persistent_voulme  pv.yaml             webserver.yaml
+app.yaml      backendservice.yaml  configmap.yaml   frontend.yaml         mongo.yaml      pvclaim.yaml       webserver-svc.yaml
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f configmap.yaml
+configmap "customer1" created
+root@master-01:~/dockerGuide/kubernetics# kubect
+
+
+
+
+
+
+root@master-01:~/dockerGuide/kubernetics# vi configvolume.yaml
+root@master-01:~/dockerGuide/kubernetics# kubectl create -f configvolume.yaml
+pod "con-demo" created
+root@master-01:~/dockerGuide/kubernetics# kubectl get po --show-all
+NAME                        READY     STATUS      RESTARTS   AGE
+con-demo                    0/1       Completed   0          17s
+rsvp-6f9948c57c-bnq4j       1/1       Running     0          4m
+rsvp-db-845cc5b7fc-96hm9    1/1       Running     0          48m
+rsvp-q-5867b8c8d5-k47wz     1/1       Running     0          2m
+webserver-79d6cffbd-7whvr   1/1       Running     0          3h
+webserver-79d6cffbd-kl986   1/1       Running     0          3h
+webserver-79d6cffbd-swb4k   1/1       Running     0          3h
+root@master-01:~/dockerGuide/kubernetics# 
+root@master-01:~/dockerGuide/kubernetics# kubectl logs con-demo
+COMPANY
+TEXT1
+TEXT2
+root@master-01:~/dockerGuide/kubernetics#
