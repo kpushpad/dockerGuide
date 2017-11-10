@@ -1,0 +1,95 @@
+
+
+
+https://github.com/cedriclam/example-Prometheus-with-Kubernetes-and-Grafana - to install Prometheus on local box
+
+Mirco-services => https://12factor.net/
+
+
+
+References
+•
+http://samnewman.io/books/building_microservices/
+•
+https://12factor.net
+•
+https://microservices-demo.github.io
+
+
+https://github.com/cloudyuga/e-cart/tree/monolith/app   => cludyuga e-cart mircoservice 
+
+kubeweelky and dockerweelky for latest info , subscribe for more info 
+
+
+blog.docker.com
+
+
+###############
+
+
+root@master-01:~# git clone https://github.com/microservices-demo/microservices-demo
+Cloning into 'microservices-demo'...
+remote: Counting objects: 9483, done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 9483 (delta 1), reused 1 (delta 1), pack-reused 9476
+Receiving objects: 100% (9483/9483), 52.81 MiB | 52.63 MiB/s, done.
+Resolving deltas: 100% (5686/5686), done.
+Checking connectivity... done.
+root@master-01:~# cd microservices-demo
+root@master-01:~/microservices-demo# kubectl create namespace sock-shop
+namespace "sock-shop" created
+root@master-01:~/microservices-demo# kubectl create -f complete-demo.yaml
+error: the path "complete-demo.yaml" does not exist
+root@master-01:~/microservices-demo# ls
+deploy  graphs       install        LICENSE  push.sh    shippable.jobs.yml       shippable.triggers.yml
+docs    healthcheck  internal-docs  openapi  README.md  shippable.resources.yml  staging
+root@master-01:~/microservices-demo# cd deploy/kubernetes 
+root@master-01:~/microservices-demo/deploy/kubernetes# kubectl create -f complete-demo.yaml
+deployment "carts-db" created
+service "carts-db" created
+deployment "carts" created
+service "carts" created
+deployment "catalogue-db" created
+service "catalogue-db" created
+deployment "catalogue" created
+service "catalogue" created
+deployment "front-end" created
+service "front-end" created
+deployment "orders-db" created
+service "orders-db" created
+deployment "orders" created
+service "orders" created
+deployment "payment" created
+service "payment" created
+deployment "queue-master" created
+service "queue-master" created
+deployment "rabbitmq" created
+service "rabbitmq" created
+deployment "shipping" created
+service "shipping" created
+deployment "user-db" created
+service "user-db" created
+deployment "user" created
+service "user" created
+root@master-01:~/microservices-demo/deploy/kubernetes# 
+
+
+root@master-01:~/microservices-demo/deploy/kubernetes# kubectl get svc -n sock-shop
+NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+carts          ClusterIP   10.104.218.133   <none>        80/TCP         3m
+carts-db       ClusterIP   10.109.47.12     <none>        27017/TCP      3m
+catalogue      ClusterIP   10.111.48.52     <none>        80/TCP         3m
+catalogue-db   ClusterIP   10.107.121.161   <none>        3306/TCP       3m
+front-end      NodePort    10.102.82.247    <none>        80:30001/TCP   3m     <<<<< 30001>> 
+orders         ClusterIP   10.108.15.92     <none>        80/TCP         3m
+orders-db      ClusterIP   10.101.216.11    <none>        27017/TCP      3m
+payment        ClusterIP   10.111.13.179    <none>        80/TCP         3m
+queue-master   ClusterIP   10.99.74.113     <none>        80/TCP         3m
+rabbitmq       ClusterIP   10.104.90.242    <none>        5672/TCP       3m
+shipping       ClusterIP   10.101.165.88    <none>        80/TCP         3m
+user           ClusterIP   10.105.29.23     <none>        80/TCP         3m
+user-db        ClusterIP   10.98.31.248     <none>        27017/TCP      3m
+root@master-01:~/microservices-demo/deploy/kubernetes# 
+
+
+http://ip:30001/
