@@ -8,6 +8,7 @@ spec:
   type: NodePort
   ports:
   - port: 80
+    nodePort: 31009
     protocol: TCP
   selector:
     app: webserver

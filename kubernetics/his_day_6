@@ -1,0 +1,249 @@
+    1  clear
+    2  apt-get install docker 
+    3  clear
+    4  pwd
+    5  apt-get update && apt-get install -y apt-transport-https
+    6  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    7  echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+    8  apt-get update
+    9  apt-get install -y kubelet kubeadm
+   10  kubeadm init --pod-network-cidr=192.168.0.0/16
+   11  apt-get install docker 
+   12  kubeadm init --pod-network-cidr=192.168.0.0/16
+   13  ps -ef | grep docker 
+   14  apt-get install docker.io
+   15  kubeadm init --pod-network-cidr=192.168.0.0/16
+   16  kubectl get nodes
+   17  mkdir -p $HOME/.kube
+   18  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   19  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   20  kubectl apply -f http://docs.projectcalico.org/v2.4/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml
+   21  kubectl get nodes
+   22  clear
+   23  kubectl get nodes
+   24  kubectl cluster-info
+   25  kubectl get nodes
+   26  kubectl cluster-info
+   27  curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+   28  chmod 700 get_helm.sh
+   29  ./get_helm.sh
+   30  helm init
+   31  kubectl create clusterrolebinding permissive-binding --clusterrole=cluster-admin --user=admin --user=kubelet --group=system:serviceaccounts;
+   32  helm search mysql
+   33  celar
+   34  pwd
+   35  clear
+   36  pwd
+   37  kubectl create ns monitoring
+   38  git clone https://github.com/coreos/prometheus-operator.git
+   39  cd prometheus-operator
+   40  helm install --name prometheus-operator --set rbacEnable=true --namespace=monitoring helm/prometheus-operator
+   41  install --name prometheus --set serviceMonitorsSelector.app=prometheus --set ruleSelector.app=prometheus --set service.type=NodePort --namespace=monitoring helm/prometheus
+   42  heml install --name prometheus --set serviceMonitorsSelector.app=prometheus --set ruleSelector.app=prometheus --set service.type=NodePort --namespace=monitoring helm/prometheus
+   43  helm install --name prometheus --set serviceMonitorsSelector.app=prometheus --set ruleSelector.app=prometheus --set service.type=NodePort --namespace=monitoring helm/prometheus
+   44  helm install --name alertmanager --namespace=monitoring helm/alertmanager
+   45  helm install --name grafana --set service.type=NodePort --namespace=monitoring helm/grafana  
+   46  wget https://raw.githubusercontent.com/vishalcloudyuga/prometheus-operator/master/helm/kube-prometheus/requirements.yaml
+   47  mv requirements.yaml ./helm/kube-prometheus/requirements.yaml
+   48  kubectl get pods -n monitoring
+   49  history > his_1
+   50  kubectl apply -n monitoring -f contrib/kube-prometheus/manifests/prometheus/prometheus-k8s-rules.yaml
+   51  kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+   52  pwd
+   53  ls
+   54  pwd
+   55  cd 
+   56  clear
+   57  pwd
+   58  ls
+   59  cd ~/.kube/
+   60  ls
+   61  vi config 
+   62  clear
+   63  ls
+   64  cd ~
+   65  pwd
+   66  ls
+   67  clar
+   68  clear
+   69  pwd
+   70  cd ~/.kube/
+   71  ls
+   72  vi config 
+   73  pwd
+   74  cd ..
+   75  ls
+   76  git clone https://github.com/kpushpad/dockerGuide.git
+   77  pwd
+   78  ls
+   79  cd dockerGuide/
+   80  ls
+   81  vi config 
+   82  clear
+   83  ls
+   84  pwd
+   85  cp ~/.kube/config  .
+   86  git status 
+   87  git commit -m "config"
+   88  git add config 
+   89  git commit -m "config"
+   90  git push
+   91  clear
+   92  pwd
+   93  clear
+   94  pwd
+   95  ls
+   96  kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+   97  kubectl get svc
+   98  kubectl get nodes
+   99  kubectl get svc -n monitoring
+  100  kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+  101  clear
+  102  ls
+  103  cd kubernetics/
+  104  ls
+  105  vi webserver.yaml 
+  106  clear
+  107  ls
+  108  vi webserver.yaml 
+  109  vi webserver-svc.yaml 
+  110  kubectl create -f webserver.yaml 
+  111  kubectl create -f webserver-svc.yaml 
+  112  kubectl get svc
+  113  ifconfig 
+  114  curl http://localhost:31009/
+  115  kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+  116  kubectl get svc
+  117  kubectl get svc -n  curl http://localhost:31009/
+  118  kubectl get svc -n monitoring
+  119  kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+  120  clear
+  121  pwd
+  122  ls
+  123  git status 
+  124  clear
+  125  cd 
+  126  ls
+  127  git clone https://github.com/microservices-demo/microservices-demo
+  128  cd microservices-demo
+  129  kubectl create namespace sock-shop
+  130  kubectl create -f complete-demo.yaml
+  131  ls
+  132  cd deploy/kubernetes 
+  133  kubectl create -f complete-demo.yaml
+  134  kubectl get deploy -n sock-shop
+  135  kubectl get svc
+  136  kubectl get svc -n
+  137  kubectl get svc 
+  138  kubectl get svc -n sock-shop
+  139  clear
+  140  pwd
+  141  cd ~/dockerGuide/
+  142  cd kubernetics/
+  143  ls
+  144  vi sockshop-ingress.yaml
+  145  kubectl create -f sockshop-ingress.yaml
+  146  kubectl get ingress -n sock-shop
+  147  kubectl get sbc 
+  148  kubectl get svc
+  149  kubectl get svc -n shoc-shop
+  150  kubectl get ingress -n sock-shop
+  151  kubectl get svc -n sock-shop
+  152  kubectl get ingress -n sock-shop
+  153  kubectl get deploy
+  154  kubectl get deploy -n sock-shop
+  155  celar
+  156  ls
+  157  vi sockshop-ingress.yaml 
+  158  kubectl get ingress -n sock-shop
+  159  kubectl get -ns
+  160  kubectl get ns
+  161  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml     | kubectl apply -f -
+  162  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/default-backend.yaml     | kubectl apply -f -
+  163  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/configmap.yaml     | kubectl apply -f -
+  164  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/tcp-services-configmap.yaml     | kubectl apply -f -
+  165  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/udp-services-configmap.yaml     | kubectl apply -f -
+  166  curl https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/rbac.yaml     | kubectl apply -f -
+  167  clear
+  168  pwd
+  169  vi ingress-controller.yaml
+  170  clear
+  171  pwd
+  172  ls
+  173  kubectl create -f ingress-controller.yaml
+  174  kubectl get svc -n shoc-shop
+  175  kubectl get ns
+  176  ubectl get ingress -n sock-shop
+  177  kubectl get ingress -n sock-shop
+  178  clear
+  179  pwd
+  180  kubectl port-forward nginx 8080:80
+  181  kubectl get pods
+  182  kubectl get pods -ns shock-shop
+  183  kubectl get pods --show-all
+  184  ubectl create ns monitoring
+  185  kubectl create ns monitoring
+  186  git clone https://github.com/coreos/prometheus-operator.git
+  187  ls
+  188  rm -rf prometheus-operator/
+  189  cd 
+  190  git clone https://github.com/coreos/prometheus-operator.git
+  191  pwd
+  192  ls
+  193  cd prometheus-operator/
+  194  clear
+  195  helm del --purge alertmanager
+  196  helm del --purge prometheus
+  197  helm del --purge prometheus-operator
+  198  kubectl delete ns monitoring
+  199  clear
+  200  pwd
+  201  cd ..
+  202  ls
+  203  cd microservices-demo/
+  204  ls
+  205  cd deploy/kubernetes/
+  206  ls
+  207  kubectl create -f manifests-monitoring/.
+  208  kubectl create ns monitoring
+  209  kubectl create -f manifests-monitoring
+  210  kubectl delete  ns monitoring
+  211  kubectl create -f manifests-monitoring
+  212  kubectl create ns monitoring
+  213  kubectl create -f manifests-monitoring
+  214  kubectl get ns
+  215  kubectl delete  ns monitoring
+  216  kubectl create -f manifests-monitoring
+  217  kubectl get svc
+  218  kubectl get pods
+  219  kubectl get ns
+  220  kubectl get nodes
+  221  kubectl get ns
+  222  clear
+  223  pwd
+  224  kubectl create -f manifests-monitoring
+  225  kubectl create -f manifests-monitoring/.
+  226  clear
+  227  pwd
+  228  ls
+  229  kubectl create -f manifests-monitoring/.
+  230  kubectl get svc
+  231  kubectl get svc -ns monitoring 
+  232  kubectl get svc -ns manifests-monitoring
+  233  kubectl get svc 
+  234  kubectl get po -n monitoring 
+  235  kubectl get svc -n monitoring
+  236  curl http://10.142.0.2:31090/
+  237  curl http://10.142.0.4:31090/
+  238  curl http://10.142.0.3:31090/
+  239  kubectl get svc -n monitoring
+  240  kubectl get pods  -n monitoring
+  241  kubectl get svc -n monitoring
+  242  celar
+  243  ls
+  244  cd ..
+  245  ls
+  246  cd dockerGuide/kubernetics/
+  247  ls
+  248  clear
+  249  history > his_day_6
