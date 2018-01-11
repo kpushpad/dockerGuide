@@ -1,6 +1,8 @@
 
 ###Steps from taken from "https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-using-the-repository"##
 
+Ubuttu 14.04 
+
 
 sudo apt-get remove docker docker-engine docker.io
   
@@ -25,3 +27,4 @@ sudo apt-get install docker-ce
 
 sudo docker run hello-world
 
+Setup proxy if required => https://stackoverflow.com/questions/26550360/docker-ubuntu-behind-proxy
