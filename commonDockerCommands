@@ -62,4 +62,8 @@ RUN apt-get install wget
         docker push <image-name> 
    
    
- 
+ 12. remove all untaged images 
+     docker images | grep "^<none>" | awk '{ print $3 }' | xargs docker rmi
+     
+ 13. remove  all container      
+     docker stop $(docker ps -a) && docker rm $(docker ps -a -q)
